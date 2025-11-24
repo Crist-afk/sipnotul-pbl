@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Notulen - SIPNOTUL</title>
+    <link rel="stylesheet" href="./src/styles.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <div class="header-left">
+                <a href="/" class="logo">
+                    <img src="./assets/logo.png" alt="SIPNOTUL Logo" height="32">
+                </a>
+                <nav class="main-nav">
+                    <a href="dashboard.html">Dashboard</a>
+                    <a href="manage.html" class="active">Kelola Notulen</a>
+                    <a href="#meetings">Rapat</a>
+                </nav>
+            </div>
+
+            <div class="header-controls">
+                <button id="themeToggle" class="btn small">
+                    <i class="icon">🌙</i>
+                </button>
+                <button id="newNoteBtn" class="btn primary small">Buat Notulen</button>
+                <div class="user-menu">
+                    <button id="userMenuBtn" class="btn ghost">
+                        <img id="userAvatar" class="avatar small" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSI4IiByPSI0IiBmaWxsPSIjOWNhM2FmIi8+CjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwMC00LTRINmE0IDQgMCAwMC00IDR2MnoiIGZpbGw9IiM5Y2EzYWYiLz4KPC9zdmc+" alt="">
+                        <span id="userName">...</span>
+                    </button>
+                    <div class="dropdown-menu" id="userDropdown">
+                        <a href="account.html">Pengaturan</a>
+                        <button id="logoutBtn" class="btn text-danger">Keluar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="content-section card">
+            <div class="section-header">
+                <h2>Kelola Notulen Saya</h2>
+                <div class="filters">
+                    <input type="text" id="searchInput" placeholder="Cari notulen..." class="form-input">
+                    <select id="sortSelect" class="form-select">
+                        <option value="newest">Terbaru</option>
+                        <option value="oldest">Terlama</option>
+                        <option value="title">Judul A-Z</option>
+                        <option value="meeting">Tanggal Rapat</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="manage-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Total Notulen:</span>
+                    <span class="stat-value" id="totalNotes">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Notulen Publik:</span>
+                    <span class="stat-value" id="publicNotes">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Notulen Privat:</span>
+                    <span class="stat-value" id="privateNotes">0</span>
+                </div>
+            </div>
+
+            <div id="notesContainer" class="notes-grid manage-grid">
+                <!-- Notes will be rendered here -->
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-icon">📝</div>
+                <h3>Belum ada notulen</h3>
+                <p>Anda belum membuat notulen apapun. Mulai buat notulen pertama Anda!</p>
+                <button id="createFirstNoteBtn" class="btn primary">Buat Notulen Pertama</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast & Modal components -->
+    <div id="toasts" class="toasts" aria-live="assertive"></div>
+    <div id="modal" class="modal" aria-hidden="true"></div>
+
+    <script type="module" src="./src/auth.js"></script>
+    <script type="module" src="./src/manage.js"></script>
+</body>
+</html>

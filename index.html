@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIPNOTUL - Sistem Pencatatan Notulen</title>
+    <link rel="stylesheet" href="src/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="landing-page">
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">
+                <img src="./assets/logo.png" alt="SIPNOTUL Logo" height="32">
+                <span>SIPNOTUL</span>
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="login.html" class="btn">Masuk</a>
+                <a href="register.html" class="btn primary">Daftar</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="hero">
+        <div class="container">
+            <div class="hero-grid">
+                <!-- Hero Content -->
+                <div class="hero-content">
+                    <h1>Sistem Pencatatan Notulen Digital</h1>
+                    <p class="hero-subtitle">Buat, kelola, dan bagikan notulen rapat dengan mudah.</p>
+                    
+                    <div class="search-box">
+                        <h2>Akses Cepat Notulen</h2>
+                        <form id="findNoteForm" class="search-form">
+                            <div class="input-group">
+                                <input type="text" id="noteCode" class="input" 
+                                       placeholder="Masukkan kode notulen" required>
+                                <button type="submit" class="btn primary">
+                                    <i class="icon">🔍</i> Cari
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="features">
+                        <div class="feature-card">
+                            <i class="icon">📝</i>
+                            <h3>Notulen Terstruktur</h3>
+                            <p>Template baku untuk mencatat hasil rapat dengan rapi dan terorganisir</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="icon">🔄</i>
+                            <h3>Mudah Dibagikan</h3>
+                            <p>Bagikan notulen via link atau kode kepada peserta rapat</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="icon">🔒</i>
+                            <h3>Kontrol Akses</h3>
+                            <p>Atur siapa saja yang dapat melihat dan mengubah notulen</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 SIPNOTUL - Sistem Pencatatan Notulen</p>
+        </div>
+    </footer>
+
+    <div id="toasts" class="toasts" aria-live="assertive"></div>
+
+    <script type="module">
+        import { checkAuthStatus } from './src/auth.js';
+
+        // Toast notification helper
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+
+            const container = document.getElementById('toasts');
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Check authentication status and update navigation
+        async function updateNavigation() {
+            try {
+                const user = await checkAuthStatus();
+                const navLinks = document.getElementById('navLinks');
+
+                if (user) {
+                    // User is logged in - show dashboard link
+                    navLinks.innerHTML = `
+                        <span class="user-greeting">Halo, ${user.name}!</span>
+                        <a href="dashboard.html" class="btn">Dashboard</a>
+                        <a href="account.html" class="btn">Akun</a>
+                        <a href="#" id="logoutBtn" class="btn">Keluar</a>
+                    `;
+
+                    // Add logout functionality
+                    document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        try {
+                            const { logout } = await import('./src/auth.js');
+                            await logout();
+                            showToast('Berhasil keluar', 'success');
+                            setTimeout(() => window.location.reload(), 1000);
+                        } catch (error) {
+                            console.error('Logout error:', error);
+                            showToast('Gagal keluar', 'error');
+                        }
+                    });
+                } else {
+                    // User is not logged in - show login/register links
+                    navLinks.innerHTML = `
+                        <a href="login.html" class="btn">Masuk</a>
+                        <a href="register.html" class="btn primary">Daftar</a>
+                    `;
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+                // Default to login/register links if auth check fails
+                const navLinks = document.getElementById('navLinks');
+                navLinks.innerHTML = `
+                    <a href="login.html" class="btn">Masuk</a>
+                    <a href="register.html" class="btn primary">Daftar</a>
+                `;
+            }
+        }
+
+        // Handle note search
+        document.getElementById('findNoteForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const codeInput = document.getElementById('noteCode');
+            const code = codeInput.value.trim();
+
+            if(!code) {
+                showToast('Mohon masukkan kode notulen', 'error');
+                return;
+            }
+
+            // Basic validation
+            if(!/^[A-Za-z0-9]+$/.test(code)) {
+                showToast('Kode notulen hanya boleh berisi huruf dan angka', 'error');
+                return;
+            }
+
+            window.location.href = `viewer.html?code=${encodeURIComponent(code)}`;
+        });
+
+        // Initialize navigation on page load
+        document.addEventListener('DOMContentLoaded', updateNavigation);
+    </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lihat Notulen - SIPNOTUL</title>
+    <link rel="stylesheet" href="./src/styles.css">
+</head>
+<body class="viewer-page">
+    <header class="site-header minimal">
+        <div class="container header-inner">
+            <a href="/" class="logo">SIPNOTUL</a>
+            <div class="header-controls">
+                <button id="printBtn" class="btn small">
+                    <i class="icon">🖨️</i>
+                    Cetak
+                </button>
+                <button id="downloadBtn" class="btn small">
+                    <i class="icon">⬇️</i>
+                    Unduh PDF
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container viewer-content">
+        <div class="note-view card">
+            <div id="noteContent">
+                <!-- Injected by JS -->
+                <div class="loading">Memuat notulen...</div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toasts" class="toasts" aria-live="assertive"></div>
+
+    <script type="module" src="./src/viewer.js"></script>
+</body>
+</html>
