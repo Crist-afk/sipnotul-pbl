@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Storage - SIPNOTUL</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem;
+        }
+        .btn-danger {
+            background: #ef4444;
+        }
+        .result {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 6px;
+            background: #f3f4f6;
+        }
+        pre {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧹 Clear Storage</h1>
+    <p>This tool will help you clear corrupted data from localStorage.</p>
+    
+    <div>
+        <button class="btn" onclick="showCurrentData()">Show Current Data</button>
+        <button class="btn btn-danger" onclick="clearAuth()">Clear Auth Only</button>
+        <button class="btn btn-danger" onclick="clearAll()">Clear All Data</button>
+    </div>
+    
+    <div id="result" class="result" style="display: none;"></div>
+    
+    <script>
+        function showCurrentData() {
+            const result = document.getElementById('result');
+            const auth = localStorage.getItem('sipenotul_auth') || sessionStorage.getItem('sipenotul_auth');
+            const registered = localStorage.getItem('sipenotul_registered_users');
+            const notes = localStorage.getItem('sipenotul_notes');
+            
+            result.style.display = 'block';
+            result.innerHTML = `
+                <h3>Current Storage Data:</h3>
+                <h4>Auth Session:</h4>
+                <pre>${auth ? JSON.stringify(JSON.parse(auth), null, 2) : 'None'}</pre>
+                <h4>Registered Users:</h4>
+                <pre>${registered ? JSON.stringify(JSON.parse(registered), null, 2) : 'None'}</pre>
+                <h4>Notes Count:</h4>
+                <pre>${notes ? JSON.parse(notes).length + ' notes' : 'None'}</pre>
+            `;
+        }
+        
+        function clearAuth() {
+            localStorage.removeItem('sipenotul_auth');
+            sessionStorage.removeItem('sipenotul_auth');
+            
+            const result = document.getElementById('result');
+            result.style.display = 'block';
+            result.innerHTML = '<h3>✅ Auth data cleared!</h3><p>You can now login again with NIM.</p>';
+        }
+        
+        function clearAll() {
+            if (!confirm('Are you sure? This will delete ALL data including notes!')) {
+                return;
+            }
+            
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            const result = document.getElementById('result');
+            result.style.display = 'block';
+            result.innerHTML = '<h3>✅ All data cleared!</h3><p>Storage is now empty.</p>';
+        }
+    </script>
+</body>
+</html>

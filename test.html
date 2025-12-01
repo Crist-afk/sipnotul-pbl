@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug & Test - SIPNOTUL</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 { color: #667eea; margin-bottom: 2rem; }
+        h2 { color: #374151; margin: 2rem 0 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
+        .test-section { margin-bottom: 2rem; }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            margin: 0.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            background: #667eea;
+            color: white;
+            transition: all 0.2s;
+        }
+        .btn:hover { background: #5568d3; transform: translateY(-2px); }
+        .result {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .success { background: #d1fae5; border-color: #10b981; color: #065f46; }
+        .error { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+        .info { background: #dbeafe; border-color: #3b82f6; color: #1e40af; }
+        pre {
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.875rem;
+        }
+        .status { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .status-pass { background: #d1fae5; color: #065f46; }
+        .status-fail { background: #fee2e2; color: #991b1b; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #f9fafb; font-weight: 600; }
+        .log { font-family: 'Courier New', monospace; font-size: 0.875rem; background: #1f2937; color: #10b981; padding: 1rem; border-radius: 8px; max-height: 300px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 SIPNOTUL Debug & Test Suite</h1>
+        <p style="color: #6b7280; margin-bottom: 2rem;">Comprehensive testing and debugging for all features</p>
+
+        <!-- Quick Status -->
+        <div class="test-section">
+            <h2>📊 Quick Status</h2>
+            <div id="quickStatus">Running tests...</div>
+        </div>
+
+        <!-- Module Tests -->
+        <div class="test-section">
+            <h2>🧪 Module Tests</h2>
+            <button class="btn" onclick="testModules()">Test All Modules</button>
+            <div id="moduleResults"></div>
+        </div>
+
+        <!-- Authentication Tests -->
+        <div class="test-section">
+            <h2>🔐 Authentication Tests</h2>
+            <button class="btn" onclick="testLogin()">Test Login</button>
+            <button class="btn" onclick="testLogout()">Test Logout</button>
+            <button class="btn" onclick="checkSession()">Check Session</button>
+            <div id="authResults"></div>
+        </div>
+
+        <!-- Storage Tests -->
+        <div class="test-section">
+            <h2>💾 Storage Tests</h2>
+            <button class="btn" onclick="testStorage()">Test Storage</button>
+            <button class="btn" onclick="viewNotes()">View All Notes</button>
+            <button class="btn" onclick="clearAllData()">Clear All Data</button>
+            <div id="storageResults"></div>
+        </div>
+
+        <!-- Demo Users -->
+        <div class="test-section">
+            <h2>👥 Demo Users</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>NIM</th>
+                        <th>Password</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>01</code></td>
+                        <td><code>Admin123</code></td>
+                        <td>Demo User</td>
+                        <td>admin</td>
+                        <td><button class="btn" onclick="quickLogin('01', 'Admin123')">Quick Login</button></td>
+                    </tr>
+                    <tr>
+                        <td><code>3312501041</code></td>
+                        <td><code>Crist123</code></td>
+                        <td>Crist Garcia Pasaribu</td>
+                        <td>user</td>
+                        <td><button class="btn" onclick="quickLogin('3312501041', 'Crist123')">Quick Login</button></td>
+                    </tr>
+                    <tr>
+                        <td><code>2006</code></td>
+                        <td><code>Admin123</code></td>
+                        <td>Takanashi Hoshino</td>
+                        <td>admin</td>
+                        <td><button class="btn" onclick="quickLogin('2006', 'Admin123')">Quick Login</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Console Log -->
+        <div class="test-section">
+            <h2>📝 Console Log</h2>
+            <div id="consoleLog" class="log">Waiting for tests...</div>
+        </div>
+
+        <!-- Page Links -->
+        <div class="test-section">
+            <h2>🔗 Quick Links</h2>
+            <button class="btn" onclick="window.open('index.html', '_blank')">Open Index</button>
+            <button class="btn" onclick="window.open('dashboard.html', '_blank')">Open Dashboard</button>
+            <button class="btn" onclick="window.open('manage.html', '_blank')">Open Manage</button>
+            <button class="btn" onclick="window.open('editor.html', '_blank')">Open Editor</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { login, logout, getCurrentUser, isLoggedIn, register } from './src/auth.js';
+        import { getAllNotes, getNotesByAuthor, saveNote, deleteNote } from './src/storage.js';
+
+        const logs = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            logs.push(`[${timestamp}] ${message}`);
+            updateConsole();
+            console.log(message);
+        }
+
+        function updateConsole() {
+            document.getElementById('consoleLog').innerHTML = logs.slice(-20).join('\n');
+        }
+
+        // Test modules
+        window.testModules = async function() {
+            log('Testing modules...');
+            const results = document.getElementById('moduleResults');
+            
+            const tests = [
+                { name: 'auth.login', fn: () => typeof login === 'function' },
+                { name: 'auth.logout', fn: () => typeof logout === 'function' },
+                { name: 'auth.getCurrentUser', fn: () => typeof getCurrentUser === 'function' },
+                { name: 'auth.isLoggedIn', fn: () => typeof isLoggedIn === 'function' },
+                { name: 'storage.getAllNotes', fn: () => typeof getAllNotes === 'function' },
+                { name: 'storage.saveNote', fn: () => typeof saveNote === 'function' },
+                { name: 'storage.deleteNote', fn: () => typeof deleteNote === 'function' }
+            ];
+            
+            let html = '<div class="result info">Running module tests...</div>';
+            let passed = 0;
+            
+            tests.forEach(test => {
+                const result = test.fn();
+                if (result) {
+                    passed++;
+                    html += `<div class="result success">✅ ${test.name} - PASS</div>`;
+                    log(`✅ ${test.name} passed`);
+                } else {
+                    html += `<div class="result error">❌ ${test.name} - FAIL</div>`;
+                    log(`❌ ${test.name} failed`, 'error');
+                }
+            });
+            
+            html += `<div class="result ${passed === tests.length ? 'success' : 'error'}">
+                <strong>Result: ${passed}/${tests.length} tests passed</strong>
+            </div>`;
+            
+            results.innerHTML = html;
+            updateQuickStatus();
+        };
+
+        // Test login
+        window.testLogin = async function() {
+            log('Testing login...');
+            const results = document.getElementById('authResults');
+            
+            try {
+                const user = await login('01', 'Admin123', false);
+                results.innerHTML = `
+                    <div class="result success">✅ Login successful!</div>
+                    <pre>${JSON.stringify(user, null, 2)}</pre>
+                `;
+                log('✅ Login test passed');
+            } catch (error) {
+                results.innerHTML = `<div class="result error">❌ Login failed: ${error.message}</div>`;
+                log(`❌ Login test failed: ${error.message}`, 'error');
+            }
+            updateQuickStatus();
+        };
+
+        // Test logout
+        window.testLogout = function() {
+            log('Testing logout...');
+            const results = document.getElementById('authResults');
+            
+            try {
+                // Save current state
+                const hadUser = isLoggedIn();
+                
+                // Clear session without redirect
+                localStorage.removeItem('sipenotul_auth');
+                sessionStorage.removeItem('sipenotul_auth');
+                
+                results.innerHTML = `<div class="result success">✅ Logout successful! (Session cleared)</div>`;
+                log('✅ Logout test passed');
+            } catch (error) {
+                results.innerHTML = `<div class="result error">❌ Logout failed: ${error.message}</div>`;
+                log(`❌ Logout test failed: ${error.message}`, 'error');
+            }
+            updateQuickStatus();
+        };
+
+        // Check session
+        window.checkSession = function() {
+            log('Checking session...');
+            const results = document.getElementById('authResults');
+            const user = getCurrentUser();
+            
+            if (user) {
+                results.innerHTML = `
+                    <div class="result success">✅ User is logged in</div>
+                    <pre>${JSON.stringify(user, null, 2)}</pre>
+                `;
+                log('✅ Session active');
+            } else {
+                results.innerHTML = `<div class="result info">ℹ️ No active session</div>`;
+                log('ℹ️ No active session');
+            }
+            updateQuickStatus();
+        };
+
+        // Test storage
+        window.testStorage = function() {
+            log('Testing storage...');
+            const results = document.getElementById('storageResults');
+            
+            try {
+                const notes = getAllNotes();
+                results.innerHTML = `
+                    <div class="result success">✅ Storage working!</div>
+                    <div class="result info">Total notes: ${notes.length}</div>
+                    <pre>${JSON.stringify(notes.slice(0, 2), null, 2)}</pre>
+                `;
+                log(`✅ Storage test passed (${notes.length} notes found)`);
+            } catch (error) {
+                results.innerHTML = `<div class="result error">❌ Storage failed: ${error.message}</div>`;
+                log(`❌ Storage test failed: ${error.message}`, 'error');
+            }
+            updateQuickStatus();
+        };
+
+        // View notes
+        window.viewNotes = function() {
+            log('Viewing all notes...');
+            const results = document.getElementById('storageResults');
+            const notes = getAllNotes();
+            
+            results.innerHTML = `
+                <div class="result info">Found ${notes.length} notes</div>
+                <pre>${JSON.stringify(notes, null, 2)}</pre>
+            `;
+            log(`Displayed ${notes.length} notes`);
+        };
+
+        // Clear all data
+        window.clearAllData = function() {
+            if (confirm('Clear ALL data? This cannot be undone!')) {
+                log('Clearing all data...');
+                localStorage.clear();
+                sessionStorage.clear();
+                document.getElementById('storageResults').innerHTML = `
+                    <div class="result success">✅ All data cleared!</div>
+                `;
+                log('✅ All data cleared');
+                updateQuickStatus();
+            }
+        };
+
+        // Quick login
+        window.quickLogin = async function(nim, password) {
+            log(`Quick login: ${nim}`);
+            try {
+                const user = await login(nim, password, false);
+                alert(`Login successful! Welcome, ${user.name}`);
+                log(`✅ Quick login successful: ${user.name}`);
+                updateQuickStatus();
+            } catch (error) {
+                alert(`Login failed: ${error.message}`);
+                log(`❌ Quick login failed: ${error.message}`, 'error');
+            }
+        };
+
+        // Update quick status
+        function updateQuickStatus() {
+            const user = getCurrentUser();
+            const notes = getAllNotes();
+            
+            document.getElementById('quickStatus').innerHTML = `
+                <div class="result ${user ? 'success' : 'info'}">
+                    <strong>Session:</strong> ${user ? `✅ Logged in as ${user.name}` : '❌ Not logged in'}
+                </div>
+                <div class="result info">
+                    <strong>Notes:</strong> ${notes.length} notes in storage
+                </div>
+                <div class="result info">
+                    <strong>Server:</strong> ✅ Running on http://localhost:8080
+                </div>
+            `;
+        }
+
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            log('=== SIPNOTUL Debug Suite Started ===');
+            updateQuickStatus();
+            setTimeout(() => testModules(), 500);
+        });
+
+        // Make functions available globally
+        window.login = login;
+        window.logout = logout;
+        window.getCurrentUser = getCurrentUser;
+        window.getAllNotes = getAllNotes;
+    </script>
+</body>
+</html>

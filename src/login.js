@@ -1,88 +1,98 @@
-import { login, showToast } from './auth.js';
+/**
+ * SIMPLE LOGIN HANDLER - Rebuilt from scratch
+ * Handles login form submission on index.html
+ */
 
+console.log('Login.js loaded');
+
+// Wait for DOM to load
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, setting up login handler');
+    
+    // Get the login form
     const loginForm = document.getElementById('loginForm');
-
-    function showError(fieldId, message) {
-        const errorEl = document.getElementById(fieldId + 'Error');
-        errorEl.textContent = message;
-        errorEl.style.display = 'block';
+    
+    if (!loginForm) {
+        console.log('Login form not found');
+        return;
     }
-
-    function hideError(fieldId) {
-        const errorEl = document.getElementById(fieldId + 'Error');
-        errorEl.style.display = 'none';
-    }
-
-    function validateEmail(email) {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(email);
-    }
-
-    // Toggle password visibility
-    document.querySelectorAll('.toggle-password').forEach(icon => {
-        icon.addEventListener('click', (e) => {
-            const input = e.target.previousElementSibling;
-            const type = input.type === 'password' ? 'text' : 'password';
-            input.type = type;
-            e.target.textContent = type === 'password' ? '👁️' : '🙈';
-        });
-    });
-
+    
+    console.log('Login form found, attaching submit handler');
+    
+    // Handle form submission
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
-        const remember = document.getElementById('remember').checked;
-
-        let isValid = true;
-
-        // Clear previous errors
-        ['email', 'password'].forEach(field => hideError(field));
-
-        // Validate email
-        if (!email) {
-            showError('email', 'Email wajib diisi');
-            isValid = false;
-        } else if (!validateEmail(email)) {
-            showError('email', 'Format email tidak valid');
-            isValid = false;
+        console.log('Login form submitted');
+        
+        // Get form values
+        const nimInput = document.getElementById('nim');
+        const passwordInput = document.getElementById('password');
+        const rememberInput = document.getElementById('remember');
+        
+        const nim = nimInput.value.trim();
+        const password = passwordInput.value;
+        const remember = rememberInput.checked;
+        
+        console.log('Login attempt:', { nim, remember });
+        
+        // Simple validation
+        if (!nim) {
+            alert('Mohon masukkan NIM');
+            return;
         }
-
-        // Validate password
+        
         if (!password) {
-            showError('password', 'Kata sandi wajib diisi');
-            isValid = false;
+            alert('Mohon masukkan password');
+            return;
         }
-
-        if (!isValid) return;
-
+        
         // Show loading
-        const btn = document.getElementById('loginBtn');
-        const btnText = btn.querySelector('.btn-text');
-        const btnLoading = btn.querySelector('.btn-loading');
-        btn.disabled = true;
+        const loginBtn = document.getElementById('loginBtn');
+        const btnText = loginBtn.querySelector('.btn-text');
+        const btnLoading = loginBtn.querySelector('.btn-loading');
+        
+        loginBtn.disabled = true;
         btnText.style.display = 'none';
         btnLoading.style.display = 'inline';
-
+        
         try {
-            console.log('Attempting login with:', { email, password, remember });
-            const user = await login(email, password, remember);
-            console.log('Login successful, user:', user);
-            showToast(`Login berhasil! Selamat datang, ${user.name}`, 'success');
-            setTimeout(() => {
-                console.log('Redirecting to dashboard...');
-                window.location.href = 'dashboard.html';
-            }, 1500);
-        } catch (err) {
-            console.error('Login failed:', err);
-            showToast(err.message, 'error');
-        } finally {
-            // Hide loading
-            btn.disabled = false;
+            // Import login function
+            const { login } = await import('./auth.js');
+            
+            // Attempt login
+            const user = await login(nim, password, remember);
+            
+            console.log('Login successful:', user);
+            
+            // Show success message
+            alert(`Login berhasil! Selamat datang, ${user.name}`);
+            
+            // Redirect to dashboard
+            window.location.href = 'dashboard.html';
+            
+        } catch (error) {
+            console.error('Login error:', error);
+            alert(error.message || 'Login gagal. Periksa NIM dan password Anda.');
+            
+            // Restore button
+            loginBtn.disabled = false;
             btnText.style.display = 'inline';
             btnLoading.style.display = 'none';
         }
     });
+    
+    // Toggle password visibility
+    const togglePassword = document.querySelector('.toggle-password');
+    if (togglePassword) {
+        togglePassword.addEventListener('click', () => {
+            const passwordInput = document.getElementById('password');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                togglePassword.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                togglePassword.textContent = '👁️';
+            }
+        });
+    }
 });

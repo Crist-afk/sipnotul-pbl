@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('registerForm');
+    if (!registerForm) return; // Skip if register form doesn't exist on this page
 
     function showToast(message, type = 'error') {
         const toast = document.createElement('div');
@@ -17,13 +18,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showError(fieldId, message) {
         const errorEl = document.getElementById(fieldId + 'Error');
-        errorEl.textContent = message;
-        errorEl.style.display = 'block';
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
     }
 
     function hideError(fieldId) {
         const errorEl = document.getElementById(fieldId + 'Error');
-        errorEl.style.display = 'none';
+        if (errorEl) {
+            errorEl.style.display = 'none';
+        }
     }
 
     function validateEmail(email) {
@@ -48,17 +53,27 @@ document.addEventListener('DOMContentLoaded', () => {
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const firstName = document.getElementById('firstName').value.trim();
-        const lastName = document.getElementById('lastName').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        const terms = document.getElementById('terms').checked;
+        const firstNameEl = document.getElementById('firstName');
+        const lastNameEl = document.getElementById('lastName');
+        const nimEl = document.getElementById('nimReg');
+        const emailEl = document.getElementById('email');
+        const programStudiEl = document.getElementById('programStudi');
+        const passwordEl = document.getElementById('passwordReg');
+        const confirmPasswordEl = document.getElementById('confirmPassword');
+
+        const firstName = firstNameEl ? firstNameEl.value.trim() : '';
+        const lastName = lastNameEl ? lastNameEl.value.trim() : '';
+        const nim = nimEl ? nimEl.value.trim() : '';
+        const email = emailEl ? emailEl.value.trim() : '';
+        const programStudi = programStudiEl ? programStudiEl.value.trim() : '';
+        const password = passwordEl ? passwordEl.value : '';
+        const confirmPassword = confirmPasswordEl ? confirmPasswordEl.value : '';
+        const accountType = document.querySelector('input[name="accountType"]:checked') || null;
 
         let isValid = true;
 
         // Clear previous errors
-        ['firstName', 'lastName', 'email', 'password', 'confirmPassword', 'terms'].forEach(field => hideError(field));
+        ['firstName', 'lastName', 'nimReg', 'email', 'programStudi', 'passwordReg', 'confirmPassword', 'accountType'].forEach(field => hideError(field));
 
         // Validate first name
         if (!firstName) {
@@ -72,12 +87,27 @@ document.addEventListener('DOMContentLoaded', () => {
             isValid = false;
         }
 
+        // Validate NIM
+        if (!nim) {
+            showError('nim', 'NIM wajib diisi');
+            isValid = false;
+        } else if (!/^\d+$/.test(nim)) {
+            showError('nim', 'NIM harus berupa angka');
+            isValid = false;
+        }
+
         // Validate email
         if (!email) {
             showError('email', 'Email wajib diisi');
             isValid = false;
         } else if (!validateEmail(email)) {
             showError('email', 'Format email tidak valid');
+            isValid = false;
+        }
+
+        // Validate program studi
+        if (!programStudi) {
+            showError('programStudi', 'Program studi wajib diisi');
             isValid = false;
         }
 
@@ -99,9 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
             isValid = false;
         }
 
-        // Validate terms
-        if (!terms) {
-            showError('terms', 'Anda harus menyetujui syarat & ketentuan');
+        // Validate account type
+        if (!accountType) {
+            showError('accountType', 'Tipe akun wajib dipilih');
             isValid = false;
         }
 
@@ -109,24 +139,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Show loading
         const btn = document.getElementById('registerBtn');
-        const btnText = btn.querySelector('.btn-text');
-        const btnLoading = btn.querySelector('.btn-loading');
-        btn.disabled = true;
-        btnText.style.display = 'none';
-        btnLoading.style.display = 'inline';
+        if (btn) {
+            const btnText = btn.querySelector('.btn-text');
+            const btnLoading = btn.querySelector('.btn-loading');
+            btn.disabled = true;
+            if (btnText) btnText.style.display = 'none';
+            if (btnLoading) btnLoading.style.display = 'inline';
+        }
 
         try {
-            // For demo, simulate registration
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // Store user data (in real app, this would be API call)
+            // Import register function and call it
+            const { register } = await import('./auth.js');
             const userData = {
-                id: Date.now(),
                 name: `${firstName} ${lastName}`,
+                nim: nim,
                 email: email,
-                token: `demo-${Date.now()}`
+                programStudi: programStudi,
+                role: accountType.value,
+                password: password
             };
-            localStorage.setItem('sipenotul_auth', JSON.stringify(userData));
+            const user = await register(userData);
 
             showToast('Registrasi berhasil! Mengalihkan...', 'success');
             setTimeout(() => {
@@ -134,12 +166,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 1500);
 
         } catch (err) {
-            showToast('Terjadi kesalahan. Silakan coba lagi.', 'error');
+            console.error('Registration error:', err);
+            showToast(err.message || 'Terjadi kesalahan. Silakan coba lagi.', 'error');
         } finally {
             // Hide loading
-            btn.disabled = false;
-            btnText.style.display = 'inline';
-            btnLoading.style.display = 'none';
+            if (btn) {
+                const btnText = btn.querySelector('.btn-text');
+                const btnLoading = btn.querySelector('.btn-loading');
+                btn.disabled = false;
+                if (btnText) btnText.style.display = 'inline';
+                if (btnLoading) btnLoading.style.display = 'none';
+            }
         }
     });
 });

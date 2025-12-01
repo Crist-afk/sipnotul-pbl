@@ -4,105 +4,186 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor Notulen - SIPNOTUL</title>
-    <link rel="stylesheet" href="./src/styles.css">
+    <link rel="stylesheet" href="src/styles.css?v=2">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Header -->
     <header class="site-header">
         <div class="container header-inner">
-            <div class="header-left">
-                <a href="dashboard.html" class="btn ghost">
-                    <i class="icon">←</i>
-                    Kembali
-                </a>
-                <h1 id="editorTitle">Notulen Baru</h1>
-            </div>
-            
+            <a href="dashboard.html" class="logo" style="color: var(--primary);">
+                <img src="./assets/logo.png" alt="SIPNOTUL Logo">
+                <span>SIPNOTUL</span>
+            </a>
             <div class="header-controls">
-                <div class="note-status" id="saveStatus">
-                    <span class="status-dot"></span>
-                    <span class="status-text">Tersimpan</span>
-                </div>
-                <button id="shareBtn" class="btn">Bagikan</button>
-                <button id="saveBtn" class="btn primary">Simpan</button>
+                <span id="saveStatus" style="font-size: 0.875rem; color: var(--text-muted);">Tersimpan</span>
+                <button class="btn btn-secondary btn-sm" id="shareBtn">🔗 Bagikan</button>
+                <button class="btn btn-primary btn-sm" id="saveBtn">💾 Simpan</button>
             </div>
         </div>
     </header>
 
-    <main class="container editor-layout">
-        <form id="noteForm" class="editor-form">
-            <div class="form-section card">
-                <h3>Informasi Rapat</h3>
-                <div class="form-grid">
+    <!-- Main Content -->
+    <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+        <div class="card" style="max-width: 900px; margin: 0 auto;">
+            <h2 id="editorTitle" style="margin-bottom: 2rem;">Notulen Baru</h2>
+            
+            <form id="noteForm">
+                <!-- Meeting Info -->
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Informasi Rapat</h3>
                     <div class="form-group">
-                        <label for="title">Judul Rapat</label>
-                        <input type="text" id="title" class="input" required>
+                        <label class="form-label" for="title">Judul Rapat *</label>
+                        <input type="text" class="form-input" id="title" required>
                     </div>
-                    
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="date">Tanggal</label>
-                            <input type="date" id="date" class="input" required>
+                            <label class="form-label" for="date">Tanggal *</label>
+                            <input type="date" class="form-input" id="date" required>
                         </div>
                         <div class="form-group">
-                            <label for="time">Waktu</label>
-                            <input type="time" id="time" class="input" required>
+                            <label class="form-label" for="time">Waktu</label>
+                            <input type="time" class="form-input" id="time">
                         </div>
                     </div>
-
                     <div class="form-group">
-                        <label for="location">Tempat</label>
-                        <input type="text" id="location" class="input" required>
+                        <label class="form-label" for="location">Tempat</label>
+                        <input type="text" class="form-input" id="location">
                     </div>
                 </div>
-            </div>
 
-            <div class="form-section card">
-                <h3>Peserta</h3>
-                <div class="form-group">
-                    <label for="attendees">Daftar Hadir</label>
-                    <textarea id="attendees" class="input" rows="3" 
-                              placeholder="Nama peserta (pisahkan dengan baris baru)"></textarea>
-                </div>
-            </div>
-
-            <div class="form-section card">
-                <h3>Konten Notulen</h3>
-                <div class="form-group">
-                    <label for="agenda">Agenda</label>
-                    <textarea id="agenda" class="input" rows="3" required></textarea>
+                <!-- Attendees -->
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Peserta</h3>
+                    <div class="form-group">
+                        <label class="form-label" for="attendees">Daftar Hadir (satu nama per baris)</label>
+                        <textarea class="form-input" id="attendees" rows="3" style="resize: vertical;"></textarea>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="discussion">Hasil Pembahasan</label>
-                    <textarea id="discussion" class="input rich-editor" rows="10" required></textarea>
+                <!-- Content -->
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Konten Notulen</h3>
+                    <div class="form-group">
+                        <label class="form-label" for="agenda">Agenda</label>
+                        <textarea class="form-input" id="agenda" rows="3" style="resize: vertical;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="discussion">Hasil Pembahasan *</label>
+                        <textarea class="form-input" id="discussion" rows="8" required style="resize: vertical;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="decisions">Keputusan</label>
+                        <textarea class="form-input" id="decisions" rows="3" style="resize: vertical;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="tasks">Tindak Lanjut</label>
+                        <textarea class="form-input" id="tasks" rows="3" style="resize: vertical;"></textarea>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="decisions">Keputusan</label>
-                    <textarea id="decisions" class="input" rows="3"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="tasks">Tindak Lanjut</label>
-                    <textarea id="tasks" class="input" rows="3"></textarea>
-                </div>
-            </div>
-
-            <div class="form-section card">
-                <h3>Pengaturan</h3>
-                <div class="form-group">
-                    <label class="checkbox-label">
+                <!-- Settings -->
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Pengaturan</h3>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
                         <input type="checkbox" id="isPublic">
                         <span>Dapat diakses publik dengan kode/tautan</span>
                     </label>
                 </div>
-            </div>
-        </form>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary">💾 Simpan Notulen</button>
+                    <a href="dashboard.html" class="btn btn-secondary">❌ Batal</a>
+                </div>
+            </form>
+        </div>
     </main>
 
-    <div id="toasts" class="toasts" aria-live="assertive"></div>
-    
-    <script type="module" src="./src/auth.js"></script>
-    <script type="module" src="./src/editor.js"></script>
+    <!-- Toast container -->
+    <div id="toasts" class="toasts"></div>
+
+    <!-- JavaScript -->
+    <script type="module">
+        import { requireAuth, getCurrentUser, showToast } from './src/auth.js';
+        import { saveNote, getNoteById } from './src/storage.js';
+
+        // Check auth
+        if (!requireAuth()) {
+            // Will redirect, no need to continue
+        }
+
+        const user = getCurrentUser();
+        let currentNote = null;
+
+        // Check if editing existing note
+        const params = new URLSearchParams(window.location.search);
+        const noteId = params.get('id');
+
+        if (noteId) {
+            currentNote = getNoteById(noteId);
+            if (currentNote) {
+                document.getElementById('editorTitle').textContent = 'Edit Notulen';
+                populateForm(currentNote);
+            }
+        }
+
+        // Populate form with note data
+        function populateForm(note) {
+            document.getElementById('title').value = note.title || '';
+            document.getElementById('date').value = note.meetingDate || '';
+            document.getElementById('time').value = note.time || '';
+            document.getElementById('location').value = note.location || '';
+            document.getElementById('attendees').value = (note.attendees || []).join('\n');
+            document.getElementById('agenda').value = note.agenda || '';
+            document.getElementById('discussion').value = note.content || '';
+            document.getElementById('decisions').value = note.decisions || '';
+            document.getElementById('tasks').value = note.followUp || '';
+            document.getElementById('isPublic').checked = note.isPublic || false;
+        }
+
+        // Handle form submission
+        document.getElementById('noteForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const noteData = {
+                id: currentNote?.id,
+                title: document.getElementById('title').value,
+                meetingDate: document.getElementById('date').value,
+                time: document.getElementById('time').value,
+                location: document.getElementById('location').value,
+                attendees: document.getElementById('attendees').value.split('\n').filter(Boolean),
+                agenda: document.getElementById('agenda').value,
+                content: document.getElementById('discussion').value,
+                decisions: document.getElementById('decisions').value,
+                followUp: document.getElementById('tasks').value,
+                isPublic: document.getElementById('isPublic').checked,
+                authorId: user.id
+            };
+            
+            try {
+                const saved = saveNote(noteData);
+                showToast('Notulen berhasil disimpan!', 'success');
+                setTimeout(() => window.location.href = 'dashboard.html', 1000);
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        });
+
+        // Save button
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            document.getElementById('noteForm').requestSubmit();
+        });
+
+        // Share button
+        document.getElementById('shareBtn').addEventListener('click', () => {
+            if (currentNote?.id) {
+                const url = `${location.origin}/viewer.html?code=${currentNote.id}`;
+                navigator.clipboard.writeText(url);
+                showToast('Link disalin ke clipboard!', 'success');
+            } else {
+                showToast('Simpan notulen terlebih dahulu', 'info');
+            }
+        });
+    </script>
 </body>
 </html>

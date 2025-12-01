@@ -1,30 +1,72 @@
+/**
+ * Manage Notes Module
+ * Provides interface for viewing, searching, sorting, and managing user's notes
+ * 
+ * Key Concepts:
+ * - Uses user.id (database ID) to filter notes by author
+ * - Provides search and sort functionality
+ * - Displays public/private note statistics
+ */
+
 import { requireAuth, getCurrentUser, logout } from './auth.js';
 import { getAllNotes, getNotesByAuthor, deleteNote } from './storage.js';
 
-// State
-let currentSort = 'newest';
-let searchQuery = '';
+/**
+ * Application state
+ * Tracks current sort order and search query
+ */
+let currentSort = 'newest';  // Current sort option: 'newest', 'oldest', 'title', 'meeting'
+let searchQuery = '';        // Current search query string
 
-// Update stats
+/**
+ * Update statistics display
+ * Shows total notes, public notes, and private notes counts
+ * 
+ * Note: Uses user.id (not NIM) to filter notes because notes are linked
+ * to users by their database ID (authorId)
+ */
 function updateStats() {
+    // Get current user (contains both id and nim)
     const user = getCurrentUser();
+    
+    // Get user's notes using database ID
     const userNotes = getNotesByAuthor(user.id);
 
+    // Calculate statistics
     const total = userNotes.length;
     const publicCount = userNotes.filter(note => note.isPublic).length;
     const privateCount = total - publicCount;
 
+    // Update DOM elements
     document.getElementById('totalNotes').textContent = total;
     document.getElementById('publicNotes').textContent = publicCount;
     document.getElementById('privateNotes').textContent = privateCount;
 }
 
-// Filter and sort notes
+/**
+ * Get filtered and sorted notes
+ * Applies search filter and sort order to user's notes
+ * 
+ * @returns {Array} Filtered and sorted array of notes
+ * 
+ * Filtering:
+ * - Searches in title, content, and location fields
+ * - Case-insensitive search
+ * 
+ * Sorting options:
+ * - newest: Most recent first (by createdAt)
+ * - oldest: Oldest first (by createdAt)
+ * - title: Alphabetical by title
+ * - meeting: By meeting date (earliest first)
+ */
 function getFilteredNotes() {
+    // Get current user
     const user = getCurrentUser();
+    
+    // Get user's notes using database ID
     let notes = getNotesByAuthor(user.id);
 
-    // Apply search filter
+    // Apply search filter if search query exists
     if (searchQuery) {
         const query = searchQuery.toLowerCase();
         notes = notes.filter(note =>
@@ -34,16 +76,21 @@ function getFilteredNotes() {
         );
     }
 
-    // Apply sorting
+    // Apply sorting based on current sort option
     notes.sort((a, b) => {
         switch (currentSort) {
             case 'newest':
+                // Sort by creation date, newest first
                 return new Date(b.createdAt) - new Date(a.createdAt);
             case 'oldest':
+                // Sort by creation date, oldest first
                 return new Date(a.createdAt) - new Date(b.createdAt);
             case 'title':
+                // Sort alphabetically by title
                 return a.title.localeCompare(b.title);
             case 'meeting':
+                // Sort by meeting date
+                // Notes without meeting date go to the end
                 if (!a.meetingDate && !b.meetingDate) return 0;
                 if (!a.meetingDate) return 1;
                 if (!b.meetingDate) return -1;
@@ -122,25 +169,54 @@ function renderNotes() {
     `).join('');
 }
 
-// Delete note handler
-function deleteNoteHandler(noteId) {
+/**
+ * Delete note handler
+ * Made globally accessible so it can be called from inline onclick handlers
+ * 
+ * @param {string} noteId - The ID of the note to delete
+ * 
+ * Flow:
+ * 1. Show confirmation dialog
+ * 2. Delete note from storage
+ * 3. Refresh statistics
+ * 4. Re-render notes list
+ * 5. Show success toast
+ */
+window.deleteNoteHandler = function(noteId) {
+    // Confirm before deleting (cannot be undone)
     if (confirm('Apakah Anda yakin ingin menghapus notulen ini? Tindakan ini tidak dapat dibatalkan.')) {
+        // Delete from storage
         deleteNote(noteId);
+        
+        // Refresh UI
         updateStats();
         renderNotes();
+        
+        // Show success message
         showToast('Notulen berhasil dihapus', 'success');
     }
 }
 
-// Show toast notification
+/**
+ * Show toast notification
+ * Displays a temporary message at the bottom of the screen
+ * 
+ * @param {string} message - The message to display
+ * @param {string} type - Toast type: 'info', 'success', 'error', 'warning'
+ */
 function showToast(message, type = 'info') {
+    // Get toast container
     const toasts = document.getElementById('toasts');
+    
+    // Create toast element
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.innerHTML = `
         <span>${message}</span>
         <button class="toast-close" onclick="this.parentElement.remove()">×</button>
     `;
+    
+    // Add to container
     toasts.appendChild(toast);
 
     // Auto remove after 5 seconds
@@ -151,73 +227,105 @@ function showToast(message, type = 'info') {
     }, 5000);
 }
 
-// Theme toggle functionality
-function applyTheme(isDark) {
-    if (isDark) document.body.classList.add('dark');
-    else document.body.classList.remove('dark');
-    localStorage.setItem('sip_theme_dark', isDark ? '1' : '0');
-}
-
-// Initialize
+/**
+ * Initialize manage page when DOM is loaded
+ * 
+ * Flow:
+ * 1. Check authentication (redirect to login if not authenticated)
+ * 2. Load and display notes
+ * 3. Set up event listeners for search, sort, and buttons
+ * 4. Display user information
+ */
 document.addEventListener('DOMContentLoaded', () => {
+    // Check if user is authenticated, show login modal if not
     if (!requireAuth()) return;
 
-    // Load saved theme
-    const stored = localStorage.getItem('sip_theme_dark');
-    if (stored === '1') {
-        applyTheme(true);
-    }
-
+    // Load initial data
     updateStats();
     renderNotes();
 
-    // Update user info
+    // Update user info in header
+    // Uses user.name (not NIM) for display
     const user = getCurrentUser();
     document.getElementById('userName').textContent = user.name;
 
-    // Search functionality
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-        searchQuery = e.target.value.trim();
-        renderNotes();
-    });
+    /**
+     * Set up search functionality
+     * Updates search query and re-renders notes on every input change
+     */
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.trim();
+            renderNotes(); // Re-render with new search filter
+        });
+    }
 
-    // Sort functionality
-    document.getElementById('sortSelect').addEventListener('change', (e) => {
-        currentSort = e.target.value;
-        renderNotes();
-    });
+    /**
+     * Set up sort functionality
+     * Updates sort order and re-renders notes when selection changes
+     */
+    const sortSelect = document.getElementById('sortSelect');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            renderNotes(); // Re-render with new sort order
+        });
+    }
 
-    // Event handlers
-    document.getElementById('newNoteBtn').addEventListener('click', () => {
-        window.location.href = 'editor.html';
-    });
+    /**
+     * Set up button event listeners
+     * All buttons are checked for existence before adding listeners
+     */
+    
+    // "Buat Notulen" button in header
+    const newNoteBtn = document.getElementById('newNoteBtn');
+    if (newNoteBtn) {
+        newNoteBtn.addEventListener('click', () => {
+            window.location.href = 'editor.html';
+        });
+    }
 
-    document.getElementById('createFirstNoteBtn').addEventListener('click', () => {
-        window.location.href = 'editor.html';
-    });
+    // "Buat Notulen Pertama" button (shown when no notes exist)
+    const createFirstNoteBtn = document.getElementById('createFirstNoteBtn');
+    if (createFirstNoteBtn) {
+        createFirstNoteBtn.addEventListener('click', () => {
+            window.location.href = 'editor.html';
+        });
+    }
 
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        if (confirm('Anda yakin ingin keluar?')) {
-            logout();
-        }
-    });
+    // Logout button
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            if (confirm('Anda yakin ingin keluar?')) {
+                logout(); // Clears session and redirects to home
+            }
+        });
+    }
 
-    // Theme toggle
-    document.getElementById('themeToggle').addEventListener('click', () => {
-        const isDark = !document.body.classList.contains('dark');
-        applyTheme(isDark);
-    });
+    /**
+     * User menu dropdown toggle
+     * Opens/closes dropdown when clicking user menu button
+     */
+    const userMenuBtn = document.getElementById('userMenuBtn');
+    if (userMenuBtn) {
+        userMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent event from bubbling
+            e.target.closest('.user-menu').classList.toggle('open');
+        });
+    }
 
-    // User menu dropdown toggle
-    document.getElementById('userMenuBtn').addEventListener('click', (e) => {
-        e.stopPropagation();
-        document.querySelector('.user-menu').classList.toggle('open');
-    });
-
-    // Close dropdown when clicking outside
+    /**
+     * Close dropdown when clicking outside
+     * Listens for clicks anywhere on the page
+     */
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.user-menu')) {
-            document.querySelector('.user-menu').classList.remove('open');
+            // Close all open user menus
+            document.querySelectorAll('.user-menu.open').forEach(menu => {
+                menu.classList.remove('open');
+            });
         }
     });
 });

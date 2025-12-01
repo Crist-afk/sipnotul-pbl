@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logo Size Test</title>
+    <link rel="stylesheet" href="src/styles.css">
+    <style>
+        body {
+            padding: 2rem;
+            font-family: Arial, sans-serif;
+        }
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 2px solid #ccc;
+            background: #f5f5f5;
+        }
+        .navbar {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Logo Size Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Logo in Navbar (should be 20px)</h2>
+        <nav class="navbar">
+            <div class="container">
+                <a href="/" class="logo">
+                    <img src="./assets/logo.png" alt="SIPNOTUL Logo">
+                    <span>SIPNOTUL</span>
+                </a>
+            </div>
+        </nav>
+        <p>Expected height: 20px</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Logo on Landing Page (should be 18px)</h2>
+        <div class="landing-page">
+            <nav class="navbar">
+                <div class="container">
+                    <a href="/" class="logo">
+                        <img src="./assets/logo.png" alt="SIPNOTUL Logo">
+                        <span>SIPNOTUL</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+        <p>Expected height: 18px</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Logo with Inline Style Override (16px)</h2>
+        <nav class="navbar">
+            <div class="container">
+                <a href="/" class="logo">
+                    <img src="./assets/logo.png" alt="SIPNOTUL Logo" style="height: 16px !important;">
+                    <span>SIPNOTUL</span>
+                </a>
+            </div>
+        </nav>
+        <p>Expected height: 16px (forced with inline style)</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 4: Check Actual Image Dimensions</h2>
+        <img id="testImg" src="./assets/logo.png" alt="Test" style="height: 20px;">
+        <p id="dimensions"></p>
+    </div>
+    
+    <script>
+        const img = document.getElementById('testImg');
+        img.onload = function() {
+            document.getElementById('dimensions').innerHTML = `
+                <strong>Original Image Dimensions:</strong><br>
+                Natural Width: ${img.naturalWidth}px<br>
+                Natural Height: ${img.naturalHeight}px<br>
+                Displayed Width: ${img.width}px<br>
+                Displayed Height: ${img.height}px
+            `;
+        };
+        
+        // Check all logo images
+        setTimeout(() => {
+            const logos = document.querySelectorAll('.logo img');
+            console.log('=== LOGO SIZE CHECK ===');
+            logos.forEach((logo, index) => {
+                const computed = window.getComputedStyle(logo);
+                console.log(`Logo ${index + 1}:`, {
+                    height: computed.height,
+                    width: computed.width,
+                    maxHeight: computed.maxHeight,
+                    maxWidth: computed.maxWidth,
+                    actualHeight: logo.offsetHeight + 'px',
+                    actualWidth: logo.offsetWidth + 'px'
+                });
+            });
+        }, 500);
+    </script>
+</body>
+</html>

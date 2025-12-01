@@ -4,162 +4,363 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIPNOTUL - Sistem Pencatatan Notulen</title>
-    <link rel="stylesheet" href="src/styles.css">
+    <link rel="stylesheet" href="src/styles.css?v=2">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="landing-page">
+    <!-- 
+        ============================================
+        NAVIGATION BAR
+        ============================================
+        Sticky navigation with logo and auth buttons
+    -->
     <nav class="navbar">
         <div class="container">
             <a href="/" class="logo">
-                <img src="./assets/logo.png" alt="SIPNOTUL Logo" height="32">
+                <img src="./assets/logo.png" alt="SIPNOTUL Logo">
                 <span>SIPNOTUL</span>
             </a>
             <div class="nav-links" id="navLinks">
-                <a href="login.html" class="btn">Masuk</a>
-                <a href="register.html" class="btn primary">Daftar</a>
+                <!-- Buttons will be inserted here by JavaScript -->
+                <button class="btn btn-ghost" id="loginBtn">Masuk</button>
+                <button class="btn btn-primary" id="registerBtn">Daftar</button>
             </div>
         </div>
     </nav>
 
+    <!-- 
+        ============================================
+        HERO SECTION
+        ============================================
+        Main landing page content
+    -->
     <main class="hero">
         <div class="container">
-            <div class="hero-grid">
-                <!-- Hero Content -->
-                <div class="hero-content">
-                    <h1>Sistem Pencatatan Notulen Digital</h1>
-                    <p class="hero-subtitle">Buat, kelola, dan bagikan notulen rapat dengan mudah.</p>
-                    
-                    <div class="search-box">
-                        <h2>Akses Cepat Notulen</h2>
-                        <form id="findNoteForm" class="search-form">
-                            <div class="input-group">
-                                <input type="text" id="noteCode" class="input" 
-                                       placeholder="Masukkan kode notulen" required>
-                                <button type="submit" class="btn primary">
-                                    <i class="icon">🔍</i> Cari
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+            <div class="hero-content">
+                <h1>Sistem Pencatatan Notulen Digital</h1>
+                <p class="hero-subtitle">Buat, kelola, dan bagikan notulen rapat dengan mudah dan efisien.</p>
 
-                    <div class="features">
-                        <div class="feature-card">
-                            <i class="icon">📝</i>
-                            <h3>Notulen Terstruktur</h3>
-                            <p>Template baku untuk mencatat hasil rapat dengan rapi dan terorganisir</p>
+                <!-- Quick search box -->
+                <div class="search-box">
+                    <h2>Akses Cepat Notulen</h2>
+                    <form id="searchForm">
+                        <div class="input-group">
+                            <input type="text" class="form-input" id="noteCode" placeholder="Masukkan kode notulen" required>
+                            <button type="submit" class="btn btn-primary">🔍 Cari</button>
                         </div>
-                        <div class="feature-card">
-                            <i class="icon">🔄</i>
-                            <h3>Mudah Dibagikan</h3>
-                            <p>Bagikan notulen via link atau kode kepada peserta rapat</p>
-                        </div>
-                        <div class="feature-card">
-                            <i class="icon">🔒</i>
-                            <h3>Kontrol Akses</h3>
-                            <p>Atur siapa saja yang dapat melihat dan mengubah notulen</p>
-                        </div>
+                    </form>
+                </div>
+
+                <!-- Features -->
+                <div class="features">
+                    <div class="feature-card card">
+                        <span class="icon">📝</span>
+                        <h3>Notulen Terstruktur</h3>
+                        <p>Template baku untuk mencatat hasil rapat dengan rapi dan terorganisir</p>
+                    </div>
+                    <div class="feature-card card">
+                        <span class="icon">🔄</span>
+                        <h3>Mudah Dibagikan</h3>
+                        <p>Bagikan notulen via link atau kode kepada peserta rapat</p>
+                    </div>
+                    <div class="feature-card card">
+                        <span class="icon">🔒</span>
+                        <h3>Kontrol Akses</h3>
+                        <p>Atur siapa saja yang dapat melihat dan mengubah notulen</p>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-
-
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2024 SIPNOTUL - Sistem Pencatatan Notulen</p>
+    <!-- 
+        ============================================
+        LOGIN MODAL
+        ============================================
+        Modal for user login
+    -->
+    <div id="loginModal" class="modal">
+        <div class="modal-overlay" onclick="closeLoginModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeLoginModal()">&times;</button>
+            <div class="modal-header">
+                <h2>Masuk ke Akun</h2>
+                <p>Masukkan NIM dan password Anda</p>
+            </div>
+            <div class="modal-body">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label" for="loginNim">NIM</label>
+                        <input type="text" class="form-input" id="loginNim" placeholder="Contoh: 01 atau 3312501041" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="loginPassword">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" class="form-input" id="loginPassword" placeholder="Masukkan password" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('loginPassword', this)">👁️</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="rememberMe">
+                            <span style="font-size: 0.875rem;">Ingat saya</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full" id="loginSubmitBtn">
+                        <span id="loginBtnText">Masuk</span>
+                        <span id="loginBtnLoading" style="display:none;">⏳ Memproses...</span>
+                    </button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <p>Belum punya akun? <a href="#" onclick="switchToRegister(event)">Daftar sekarang</a></p>
+            </div>
         </div>
-    </footer>
+    </div>
 
-    <div id="toasts" class="toasts" aria-live="assertive"></div>
+    <!-- 
+        ============================================
+        REGISTER MODAL
+        ============================================
+        Modal for user registration
+    -->
+    <div id="registerModal" class="modal">
+        <div class="modal-overlay" onclick="closeRegisterModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeRegisterModal()">&times;</button>
+            <div class="modal-header">
+                <h2>Buat Akun Baru</h2>
+                <p>Daftar untuk mulai menggunakan SIPNOTUL</p>
+            </div>
+            <div class="modal-body">
+                <form id="registerForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="regFirstName">Nama Depan</label>
+                            <input type="text" class="form-input" id="regFirstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="regLastName">Nama Belakang</label>
+                            <input type="text" class="form-input" id="regLastName" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="regNim">NIM</label>
+                        <input type="text" class="form-input" id="regNim" placeholder="Nomor Induk Mahasiswa" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="regEmail">Email</label>
+                        <input type="email" class="form-input" id="regEmail" placeholder="email@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="regProdi">Program Studi</label>
+                        <input type="text" class="form-input" id="regProdi" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="regPassword">Password</label>
+                            <input type="password" class="form-input" id="regPassword" placeholder="Min. 8 karakter" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="regConfirmPassword">Konfirmasi Password</label>
+                            <input type="password" class="form-input" id="regConfirmPassword" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full" id="registerSubmitBtn">
+                        <span id="registerBtnText">Daftar</span>
+                        <span id="registerBtnLoading" style="display:none;">⏳ Memproses...</span>
+                    </button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <p>Sudah punya akun? <a href="#" onclick="switchToLogin(event)">Masuk sekarang</a></p>
+            </div>
+        </div>
+    </div>
 
+    <!-- Toast container for notifications -->
+    <div id="toasts" class="toasts"></div>
+
+    <!-- 
+        ============================================
+        JAVASCRIPT
+        ============================================
+        All functionality is handled here
+    -->
     <script type="module">
-        import { checkAuthStatus } from './src/auth.js';
+        import { login, register, getCurrentUser, logout, showToast } from './src/auth.js?v=3';
 
-        // Toast notification helper
-        function showToast(message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.textContent = message;
-
-            const container = document.getElementById('toasts');
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        // Check authentication status and update navigation
-        async function updateNavigation() {
-            try {
-                const user = await checkAuthStatus();
-                const navLinks = document.getElementById('navLinks');
-
-                if (user) {
-                    // User is logged in - show dashboard link
-                    navLinks.innerHTML = `
-                        <span class="user-greeting">Halo, ${user.name}!</span>
-                        <a href="dashboard.html" class="btn">Dashboard</a>
-                        <a href="account.html" class="btn">Akun</a>
-                        <a href="#" id="logoutBtn" class="btn">Keluar</a>
-                    `;
-
-                    // Add logout functionality
-                    document.getElementById('logoutBtn').addEventListener('click', async (e) => {
-                        e.preventDefault();
-                        try {
-                            const { logout } = await import('./src/auth.js');
-                            await logout();
-                            showToast('Berhasil keluar', 'success');
-                            setTimeout(() => window.location.reload(), 1000);
-                        } catch (error) {
-                            console.error('Logout error:', error);
-                            showToast('Gagal keluar', 'error');
-                        }
-                    });
-                } else {
-                    // User is not logged in - show login/register links
-                    navLinks.innerHTML = `
-                        <a href="login.html" class="btn">Masuk</a>
-                        <a href="register.html" class="btn primary">Daftar</a>
-                    `;
-                }
-            } catch (error) {
-                console.error('Auth check error:', error);
-                // Default to login/register links if auth check fails
-                const navLinks = document.getElementById('navLinks');
-                navLinks.innerHTML = `
-                    <a href="login.html" class="btn">Masuk</a>
-                    <a href="register.html" class="btn primary">Daftar</a>
-                `;
+        // ============================================
+        // GLOBAL FUNCTIONS (for onclick handlers)
+        // ============================================
+        
+        // Toggle password visibility
+        window.togglePassword = function(inputId, button) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                button.textContent = '👁️';
             }
-        }
+        };
 
-        // Handle note search
-        document.getElementById('findNoteForm').addEventListener('submit', (e) => {
+        // Modal controls
+        window.openLoginModal = () => document.getElementById('loginModal').classList.add('show');
+        window.closeLoginModal = () => document.getElementById('loginModal').classList.remove('show');
+        window.openRegisterModal = () => document.getElementById('registerModal').classList.add('show');
+        window.closeRegisterModal = () => document.getElementById('registerModal').classList.remove('show');
+        
+        window.switchToRegister = (e) => {
             e.preventDefault();
-            const codeInput = document.getElementById('noteCode');
-            const code = codeInput.value.trim();
+            closeLoginModal();
+            openRegisterModal();
+        };
+        
+        window.switchToLogin = (e) => {
+            e.preventDefault();
+            closeRegisterModal();
+            openLoginModal();
+        };
 
-            if(!code) {
-                showToast('Mohon masukkan kode notulen', 'error');
-                return;
+        // ============================================
+        // CHECK IF USER IS LOGGED IN
+        // ============================================
+        const user = getCurrentUser();
+        console.log('[INDEX] Current user:', user);
+        
+        if (user) {
+            // User is logged in - show dashboard link
+            document.getElementById('navLinks').innerHTML = `
+                <span style="color: white; margin-right: 1rem;">Halo, ${user.name}!</span>
+                <a href="dashboard.html" class="btn btn-ghost">Dashboard</a>
+                <button class="btn btn-ghost" id="navLogoutBtn">Keluar</button>
+            `;
+            
+            // Attach logout handler
+            document.getElementById('navLogoutBtn').addEventListener('click', () => {
+                if (confirm('Anda yakin ingin keluar?')) {
+                    logout();
+                }
+            });
+        } else {
+            // User not logged in - attach button handlers
+            const loginBtn = document.getElementById('loginBtn');
+            const registerBtn = document.getElementById('registerBtn');
+            
+            console.log('[INDEX] Login button:', loginBtn);
+            console.log('[INDEX] Register button:', registerBtn);
+            
+            if (loginBtn) {
+                loginBtn.addEventListener('click', () => {
+                    console.log('[INDEX] Login button clicked');
+                    openLoginModal();
+                });
             }
-
-            // Basic validation
-            if(!/^[A-Za-z0-9]+$/.test(code)) {
-                showToast('Kode notulen hanya boleh berisi huruf dan angka', 'error');
-                return;
+            
+            if (registerBtn) {
+                registerBtn.addEventListener('click', () => {
+                    console.log('[INDEX] Register button clicked');
+                    openRegisterModal();
+                });
             }
+        }
 
-            window.location.href = `viewer.html?code=${encodeURIComponent(code)}`;
+        // ============================================
+        // LOGIN FORM HANDLER
+        // ============================================
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const nim = document.getElementById('loginNim').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const remember = document.getElementById('rememberMe').checked;
+            
+            // Show loading state
+            const btn = document.getElementById('loginSubmitBtn');
+            const btnText = document.getElementById('loginBtnText');
+            const btnLoading = document.getElementById('loginBtnLoading');
+            
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline';
+            
+            try {
+                const user = await login(nim, password, remember);
+                showToast(`Selamat datang, ${user.name}!`, 'success');
+                setTimeout(() => window.location.href = 'dashboard.html', 1000);
+            } catch (error) {
+                showToast(error.message, 'error');
+                btn.disabled = false;
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+            }
         });
 
-        // Initialize navigation on page load
-        document.addEventListener('DOMContentLoaded', updateNavigation);
+        // ============================================
+        // REGISTER FORM HANDLER
+        // ============================================
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const firstName = document.getElementById('regFirstName').value.trim();
+            const lastName = document.getElementById('regLastName').value.trim();
+            const nim = document.getElementById('regNim').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const prodi = document.getElementById('regProdi').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showToast('Password tidak cocok', 'error');
+                return;
+            }
+            
+            // Validate password length
+            if (password.length < 8) {
+                showToast('Password minimal 8 karakter', 'error');
+                return;
+            }
+            
+            // Show loading state
+            const btn = document.getElementById('registerSubmitBtn');
+            const btnText = document.getElementById('registerBtnText');
+            const btnLoading = document.getElementById('registerBtnLoading');
+            
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline';
+            
+            try {
+                const user = await register({
+                    name: `${firstName} ${lastName}`,
+                    nim,
+                    email,
+                    programStudi: prodi,
+                    password
+                });
+                showToast('Registrasi berhasil!', 'success');
+                setTimeout(() => window.location.href = 'dashboard.html', 1000);
+            } catch (error) {
+                showToast(error.message, 'error');
+                btn.disabled = false;
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+            }
+        });
+
+        // ============================================
+        // NOTE SEARCH HANDLER
+        // ============================================
+        document.getElementById('searchForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const code = document.getElementById('noteCode').value.trim();
+            if (code) {
+                window.location.href = `viewer.html?code=${encodeURIComponent(code)}`;
+            }
+        });
     </script>
 </body>
 </html>
