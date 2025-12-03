@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar - SIPNOTUL</title>
+    <link rel="stylesheet" href="src/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-card card">
+            <div class="login-header">
+                <a href="index.html" class="logo">
+                    <img src="./assets/logo.png" alt="SIPNOTUL Logo" height="32">
+                    <span>SIPNOTUL</span>
+                </a>
+                <h1>Daftar Akun Baru</h1>
+                <p class="login-subtitle">Buat akun untuk mulai menggunakan SIPNOTUL</p>
+            </div>
+
+            <form id="registerForm" class="login-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">Nama Depan</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="firstName" class="input" placeholder="Nama depan" required>
+                            <span class="input-icon">👤</span>
+                        </div>
+                        <div class="error-message" id="firstNameError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName">Nama Belakang</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="lastName" class="input" placeholder="Nama belakang" required>
+                            <span class="input-icon">👤</span>
+                        </div>
+                        <div class="error-message" id="lastNameError"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <div class="input-wrapper">
+                        <input type="email" id="email" class="input" placeholder="nama@email.com" required>
+                        <span class="input-icon">📧</span>
+                    </div>
+                    <div class="error-message" id="emailError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Kata Sandi</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" class="input" placeholder="Minimal 8 karakter" required>
+                        <span class="input-icon toggle-password">👁️</span>
+                    </div>
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Konfirmasi Kata Sandi</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="confirmPassword" class="input" placeholder="Ulangi kata sandi" required>
+                        <span class="input-icon toggle-password">👁️</span>
+                    </div>
+                    <div class="error-message" id="confirmPasswordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="terms" required>
+                        <span class="checkmark"></span>
+                        Saya setuju dengan <a href="#" class="text-primary">Syarat & Ketentuan</a>
+                    </label>
+                    <div class="error-message" id="termsError"></div>
+                </div>
+
+                <button type="submit" class="btn primary w-full" id="registerBtn">
+                    <span class="btn-text">Daftar</span>
+                    <span class="btn-loading" style="display: none;">⏳</span>
+                </button>
+
+                <div class="divider">
+                    <span>atau</span>
+                </div>
+
+                <button type="button" class="btn ghost w-full" id="googleRegister">
+                    <span class="btn-icon">🔵</span>
+                    Daftar dengan Google
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <p>Sudah punya akun? <a href="login.html" class="text-primary">Masuk sekarang</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="toasts" class="toasts" aria-live="assertive"></div>
+
+    <script type="module" src="src/auth.js"></script>
+    <script type="module" src="src/register.js"></script>
+</body>
+</html>
