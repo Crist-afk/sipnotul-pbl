@@ -4,85 +4,144 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pengaturan Akun - SIPNOTUL</title>
+    
     <link rel="stylesheet" href="src/styles.css?v=2">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Gaya spesifik untuk halaman ini untuk menghindari inline style */
+        .site-logo {
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .main-content {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        .profile-card {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card-title {
+            margin-bottom: 2rem;
+        }
+
+        /* Styling input disabled agar lebih konsisten */
+        input:disabled {
+            background-color: var(--gray-100, #f3f4f6);
+            cursor: not-allowed;
+            color: var(--gray-500, #6b7280);
+        }
+    </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="site-header">
         <div class="container header-inner">
-            <a href="dashboard.html" class="logo" style="color: var(--primary);">
-                <img src="./assets/logo.png" alt="SIPNOTUL Logo">
+            <a href="dashboard.html" class="logo site-logo">
+                <img src="./assets/logo.png" alt="Logo SIPNOTUL">
                 <span>SIPNOTUL</span>
             </a>
             <div class="header-controls">
-                <a href="dashboard.html" class="btn btn-secondary btn-sm">← Kembali</a>
+                <a href="dashboard.html" class="btn btn-secondary btn-sm">
+                    &larr; Kembali
+                </a>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
-        <div class="card" style="max-width: 600px; margin: 0 auto;">
-            <h2 style="margin-bottom: 2rem;">Pengaturan Akun</h2>
+    <main class="container main-content">
+        <div class="card profile-card">
+            <h2 class="card-title">Pengaturan Akun</h2>
             
             <form id="profileForm">
                 <div class="form-group">
                     <label class="form-label" for="name">Nama Lengkap</label>
-                    <input type="text" class="form-input" id="name" required>
+                    <input type="text" class="form-input" id="name" name="name" required>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label" for="nim">NIM</label>
-                    <input type="text" class="form-input" id="nim" disabled style="background: var(--gray-100); cursor: not-allowed;">
+                    <input type="text" class="form-input" id="nim" name="nim" disabled>
                     <small class="text-muted">NIM tidak dapat diubah</small>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label" for="email">Email</label>
-                    <input type="email" class="form-input" id="email" required>
+                    <input type="email" class="form-input" id="email" name="email" required>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="programStudi">Program Studi</label>
-                    <input type="text" class="form-input" id="programStudi" required>
+                    <input type="text" class="form-input" id="programStudi" name="programStudi" required>
                 </div>
 
-                <button type="submit" class="btn btn-primary">💾 Simpan Perubahan</button>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        💾 Simpan Perubahan
+                    </button>
+                </div>
             </form>
         </div>
     </main>
 
-    <!-- Toast container -->
     <div id="toasts" class="toasts"></div>
 
-    <!-- JavaScript -->
     <script type="module">
         import { requireAuth, getCurrentUser, showToast } from './src/auth.js';
 
-        // Check auth
+        // 1. Cek Autentikasi
         if (!requireAuth()) {
-            // Will redirect, no need to continue
+            // Jika tidak login, requireAuth biasanya akan me-redirect,
+            // jadi kita stop eksekusi script di sini.
+            throw new Error("Redirecting to login...");
         }
 
+        // 2. Ambil data user saat ini
         const user = getCurrentUser();
 
-        // Populate form
-        document.getElementById('name').value = user.name || '';
-        document.getElementById('nim').value = user.nim || '';
-        document.getElementById('email').value = user.email || '';
-        document.getElementById('programStudi').value = user.programStudi || '';
+        // 3. Isi form dengan data user
+        const formElements = {
+            name: document.getElementById('name'),
+            nim: document.getElementById('nim'),
+            email: document.getElementById('email'),
+            programStudi: document.getElementById('programStudi')
+        };
 
-        // Handle form submission
+        if (user) {
+            formElements.name.value = user.name || '';
+            formElements.nim.value = user.nim || '';
+            formElements.email.value = user.email || '';
+            formElements.programStudi.value = user.programStudi || '';
+        }
+
+        // 4. Handle Submit Form
         document.getElementById('profileForm').addEventListener('submit', (e) => {
             e.preventDefault();
             
-            // In a real app, this would update the user profile via API
-            // For now, we'll just show a success message
-            showToast('Profil berhasil diperbarui!', 'success');
-            
-            // Note: In production, you would update the user data in localStorage/sessionStorage
-            // and possibly sync with a backend API
+            try {
+                // Simulasi update data (Update object user)
+                const updatedUser = {
+                    ...user,
+                    name: formElements.name.value,
+                    email: formElements.email.value,
+                    programStudi: formElements.programStudi.value
+                };
+
+                // Simpan kembali ke localStorage (Simulasi Backend)
+                localStorage.setItem('user_session', JSON.stringify(updatedUser)); // Sesuaikan key dengan auth.js Anda
+
+                showToast('Profil berhasil diperbarui!', 'success');
+                
+            } catch (error) {
+                console.error(error);
+                showToast('Gagal memperbarui profil.', 'error');
+            }
         });
     </script>
 </body>
