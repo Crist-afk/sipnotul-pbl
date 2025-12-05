@@ -77,13 +77,29 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ============================================
+   GLOBAL BACKGROUND (Updated)
+   ============================================ */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
   color: var(--text);
-  background: var(--bg);
+  
+  /* Background Gradasi Lembut yang bergerak halus */
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%); /* Pilihan pastel yang lebih tenang */
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  
+  /* Supaya halaman penuh minimal setinggi layar */
+  min-height: 100vh;
 }
 
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
 /* ============================================
    TYPOGRAPHY
    ============================================ */
@@ -281,11 +297,21 @@ a:hover {
   width: 100%;
   padding: 0.625rem 0.875rem;
   font-size: 0.9375rem;
-  border: 1px solid var(--border);
+  
+  /* Glass input styling */
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  
   border-radius: var(--radius-md);
-  background: var(--white);
   color: var(--text);
   transition: var(--transition);
+}
+
+.form-input:focus {
+  background: rgba(255, 255, 255, 0.9);
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
 }
 
 .form-input:focus {
@@ -329,13 +355,29 @@ a:hover {
 /* ============================================
    CARDS
    ============================================ */
+/* ============================================
+   CARDS (Glassmorphism Transformation)
+   ============================================ */
 .card {
-  background: var(--white);
-  border: 1px solid var(--border);
+  /* Hapus background putih solid, ganti dengan transparan */
+  background: rgba(255, 255, 255, 0.65); 
+  
+  /* Efek Kaca */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
-  box-shadow: var(--shadow-sm);
-  transition: var(--transition);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px); /* Sedikit naik saat di hover */
+  background: rgba(255, 255, 255, 0.8); /* Lebih jelas saat di hover */
+  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
+  border-color: rgba(255, 255, 255, 0.9);
 }
 
 .card:hover {
@@ -643,15 +685,19 @@ a:hover {
 /* ============================================
    DASHBOARD
    ============================================ */
+/* ============================================
+   HEADER (Glass Effect)
+   ============================================ */
 .site-header {
-  background: var(--white);
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
+  background: rgba(255, 255, 255, 0.7); /* Putih transparan */
+  backdrop-filter: blur(10px);           /* Efek blur */
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 0;
   z-index: 100;
 }
-
 .header-inner {
   display: flex;
   align-items: center;
@@ -860,3 +906,15 @@ a:hover {
 .mb-1 { margin-bottom: var(--space-sm); }
 .mb-2 { margin-bottom: var(--space-md); }
 .mb-3 { margin-bottom: var(--space-lg); }
+
+/* ============================================
+   OVERRIDE FOR STATS BOX
+   ============================================ */
+/* Menargetkan div statistik yang ada di dalam main container */
+main .card > div[style*="background: var(--gray-50)"] {
+    background: rgba(255, 255, 255, 0.3) !important; /* Timpa warna abu-abu */
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(4px);
+    border-radius: var(--radius-md);
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.5); /* Efek kedalaman */
+}
