@@ -475,9 +475,63 @@ a:hover {
 /* ============================================
    HERO SECTION
    ============================================ */
+/* ============================================
+   HERO SECTION (Updated for Glassmorphism)
+   ============================================ */
 .hero {
-  padding: var(--space-2xl) 0;
-  background: linear-gradient(135deg, var(--gray-50) 0%, var(--white) 100%);
+    padding: var(--space-2xl) 0;
+    /* Ganti background polos dengan gradasi modern agar efek kaca terlihat */
+    background: 
+        radial-gradient(at 0% 0%, rgba(102, 126, 234, 0.3) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(118, 75, 162, 0.3) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(102, 126, 234, 0.1) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(118, 75, 162, 0.1) 0px, transparent 50%),
+        #f8fafc; /* Base color */
+    position: relative;
+    overflow: hidden;
+}
+
+/* Opsional: Menambahkan bola-bola blur di background agar kaca makin estetik */
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: 10%;
+    width: 300px;
+    height: 300px;
+    background: var(--primary);
+    filter: blur(100px);
+    opacity: 0.2;
+    border-radius: 50%;
+    z-index: 0;
+    animation: float 6s ease-in-out infinite;
+}
+
+.hero::after {
+    content: '';
+    position: absolute;
+    bottom: 20%;
+    right: 10%;
+    width: 250px;
+    height: 250px;
+    background: var(--secondary);
+    filter: blur(100px);
+    opacity: 0.2;
+    border-radius: 50%;
+    z-index: 0;
+    animation: float 8s ease-in-out infinite reverse;
+}
+
+/* Animasi mengapung halus */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0px); }
+}
+
+.hero .container {
+    position: relative;
+    z-index: 1; /* Agar konten di atas background blur */
 }
 
 .hero-content h1 {
@@ -493,47 +547,88 @@ a:hover {
 /* ============================================
    FEATURES
    ============================================ */
+/* ============================================
+   FEATURES (Glassmorphism Effect)
+   ============================================ */
 .features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--space-xl);
-  margin-top: var(--space-2xl);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-xl);
+    margin-top: var(--space-2xl);
 }
 
 .feature-card {
-  text-align: center;
-  padding: var(--space-xl);
+    text-align: center;
+    padding: var(--space-xl);
+    
+    /* GLASSMORPHISM CODE START */
+    background: rgba(255, 255, 255, 0.25); /* Putih Transparan */
+    backdrop-filter: blur(12px);            /* Efek Blur di belakang kaca */
+    -webkit-backdrop-filter: blur(12px);    /* Support Safari */
+    border: 1px solid rgba(255, 255, 255, 0.4); /* Border tipis mengkilap */
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); /* Bayangan soft */
+    border-radius: var(--radius-xl);
+    /* GLASSMORPHISM CODE END */
+
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px); /* Efek naik saat di hover */
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
+    background: rgba(255, 255, 255, 0.4); /* Lebih putih saat di hover */
+    border-color: rgba(255, 255, 255, 0.8);
 }
 
 .feature-card .icon {
-  font-size: 3rem;
-  margin-bottom: var(--space-md);
-  display: block;
+    font-size: 2.5rem;
+    margin-bottom: var(--space-md);
+    display: inline-block;
+    
+    /* Membuat icon ada background glow-nya */
+    background: rgba(255, 255, 255, 0.5);
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
 .feature-card h3 {
-  margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-sm);
+    color: var(--primary-dark); /* Warna judul sedikit lebih gelap agar terbaca di kaca */
 }
 
 .feature-card p {
-  color: var(--text-muted);
-  margin: 0;
+    color: var(--gray-700);
+    margin: 0;
+    font-size: 0.95rem;
 }
 
 /* ============================================
-   SEARCH BOX
+   SEARCH BOX (Updated)
    ============================================ */
 .search-box {
-  background: var(--white);
-  padding: var(--space-xl);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  margin-bottom: var(--space-2xl);
+    /* Glass Effect yang lebih tebal untuk search box */
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    
+    padding: var(--space-xl);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
+    margin-bottom: var(--space-2xl);
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .search-box h2 {
-  font-size: 1.25rem;
-  margin-bottom: var(--space-lg);
+    font-size: 1.5rem;
+    margin-bottom: var(--space-lg);
+    text-align: center;
+    color: var(--primary-dark);
 }
 
 .input-group {
