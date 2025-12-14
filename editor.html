@@ -52,6 +52,24 @@
                 </div>
 
                 <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Peserta Rapat</h3>
+                    
+                    <div class="form-row" style="align-items: flex-end;">
+                        <div class="form-group" style="flex: 1;">
+                            <label class="form-label">Nama Peserta / NIM</label>
+                            <input type="text" class="form-input" id="attendeeInput" placeholder="Ketik nama lalu tekan Enter atau tombol Tambah">
+                        </div>
+                        <div class="form-group" style="flex: 0;">
+                            <button type="button" class="btn btn-secondary" id="addAttendeeBtn">Tambah</button>
+                        </div>
+                    </div>
+
+                    <div id="attendeesList" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; padding: 1rem; background: var(--gray-50); border-radius: var(--radius-md); min-height: 50px;">
+                        <span class="text-muted" id="emptyAttendeesMsg" style="font-size: 0.875rem;">Belum ada peserta ditambahkan.</span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 2rem;">
                     <h3 style="margin-bottom: 1rem;">Konten Notulen</h3>
                     <div class="form-group">
                         <label class="form-label" for="discussion">Hasil Pembahasan *</label>
@@ -83,16 +101,83 @@
     <script type="module">
         import { requireAuth, getCurrentUser, showToast } from './src/auth.js';
         
-        // Cek Login (Auth.js tetap dipakai untuk cek sesi browser)
+        // Cek Login
         if (!requireAuth()) {
-            // Redirect terjadi otomatis
+            // Redirect handled automatically
         }
 
         const user = getCurrentUser();
         console.log("Logged in user:", user);
 
         // ==========================================
-        // 1. LOGIKA EDIT (LOAD DATA DARI DATABASE)
+        // VARIABLE GLOBAL: PESERTA
+        // ==========================================
+        let attendeesData = []; 
+
+        // ==========================================
+        // 1. LOGIKA UI PESERTA (TAMBAH/HAPUS DI LAYAR)
+        // ==========================================
+        const attendeeInput = document.getElementById('attendeeInput');
+        const addAttendeeBtn = document.getElementById('addAttendeeBtn');
+        const attendeesList = document.getElementById('attendeesList');
+        const emptyMsg = document.getElementById('emptyAttendeesMsg');
+
+        // Fungsi Render List di Layar
+        function renderAttendees() {
+            attendeesList.innerHTML = ''; // Reset tampilan list
+            
+            if (attendeesData.length === 0) {
+                attendeesList.appendChild(emptyMsg);
+                emptyMsg.style.display = 'block';
+                return;
+            }
+
+            emptyMsg.style.display = 'none';
+
+            attendeesData.forEach((person, index) => {
+                const badge = document.createElement('div');
+                badge.style.cssText = `
+                    background: white; border: 1px solid var(--border); 
+                    padding: 0.25rem 0.75rem; border-radius: 20px; 
+                    display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;
+                `;
+                // Menampilkan nama dan tombol silang (x) merah
+                badge.innerHTML = `
+                    <span>👤 ${person.name}</span>
+                    <span onclick="removeAttendee(${index})" style="cursor: pointer; color: red; font-weight: bold; margin-left: 5px;">×</span>
+                `;
+                attendeesList.appendChild(badge);
+            });
+        }
+
+        // Fungsi Tambah ke Array
+        function addAttendee() {
+            const val = attendeeInput.value.trim();
+            if (val) {
+                // Tambahkan ke array
+                attendeesData.push({ nim: '-', name: val });
+                attendeeInput.value = ''; // Kosongkan input
+                renderAttendees(); // Update layar
+            }
+        }
+
+        // Fungsi Hapus dari Array (Global window agar bisa dipanggil onclick HTML)
+        window.removeAttendee = (index) => {
+            attendeesData.splice(index, 1);
+            renderAttendees();
+        };
+
+        // Event Listener Tombol Tambah Peserta
+        addAttendeeBtn.addEventListener('click', addAttendee);
+        attendeeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Mencegah submit form tak sengaja
+                addAttendee();
+            }
+        });
+
+        // ==========================================
+        // 2. LOGIKA EDIT (LOAD DATA DARI DATABASE)
         // ==========================================
         const params = new URLSearchParams(window.location.search);
         const noteId = params.get('id');
@@ -120,6 +205,12 @@
                     document.getElementById('decisions').value = note.decisions;
                     document.getElementById('tasks').value = note.followUp;
                     document.getElementById('isPublic').checked = (note.isPublic == 1);
+
+                    // ISI PESERTA (JIKA ADA DARI DATABASE)
+                    if (note.attendeesList) {
+                        attendeesData = note.attendeesList;
+                        renderAttendees();
+                    }
                 } else {
                     showToast('Gagal memuat data notulen: ' + data.message, 'error');
                 }
@@ -130,7 +221,7 @@
         }
 
         // ==========================================
-        // 2. LOGIKA SIMPAN (KIRIM KE DATABASE)
+        // 3. LOGIKA SIMPAN (KIRIM KE DATABASE)
         // ==========================================
         document.getElementById('saveBtn').addEventListener('click', async () => {
             const saveBtn = document.getElementById('saveBtn');
@@ -148,7 +239,10 @@
             const formData = new FormData(form);
 
             // Tambahkan data User yang sedang login (Author)
-            formData.append('authorNim', user.nim || user.id); // Sesuaikan dengan properti di auth.js kamu
+            formData.append('authorNim', user.nim || user.id); 
+
+            // --- PENTING: Tambahkan data Peserta (Convert Array ke JSON String) ---
+            formData.append('attendees', JSON.stringify(attendeesData));
 
             // Ubah tampilan tombol jadi loading
             saveBtn.disabled = true;
@@ -156,7 +250,7 @@
             statusSpan.textContent = 'Menyimpan...';
 
             try {
-                // KIRIM KE FILE PHP BARU KITA
+                // KIRIM KE FILE PHP
                 const response = await fetch('save_note.php', {
                     method: 'POST',
                     body: formData
@@ -171,7 +265,7 @@
                     // Jika ini notulen baru, redirect ke dashboard atau update URL
                     if (!noteId) {
                         setTimeout(() => {
-                            window.location.href = 'dashboard.html'; // atau reload ke mode edit
+                            window.location.href = 'dashboard.html';
                         }, 1500);
                     }
                 } else {
@@ -189,7 +283,7 @@
         });
 
         // ==========================================
-        // 3. FITUR SHARE
+        // 4. FITUR SHARE
         // ==========================================
         document.getElementById('shareBtn').addEventListener('click', () => {
             const currentId = document.getElementById('idNotes').value;

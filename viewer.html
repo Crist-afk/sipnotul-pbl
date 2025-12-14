@@ -48,43 +48,55 @@
         JAVASCRIPT
         ============================================
     -->
-    <script type="module">
-        import { getNoteById, getUserById } from './src/storage.js';
-        import { showToast } from './src/auth.js';
+<script type="module">
+        // Hapus import storage.js karena kita pakai Database
+        // import { getNoteById, getUserById } from './src/storage.js'; 
+        
+        // Helper Toast (Opsional jika file auth.js ada)
+        // import { showToast } from './src/auth.js'; 
 
-        // Get note code from URL
+        // ============================================
+        // 1. AMBIL KODE DARI URL
+        // ============================================
         const params = new URLSearchParams(window.location.search);
         const code = params.get('code');
 
         if (!code) {
             showError('Kode notulen tidak valid');
         } else {
-            loadNote(code);
+            loadNoteFromDB(code);
         }
 
         // ============================================
-        // LOAD NOTE
+        // 2. LOAD NOTE DARI DATABASE (PHP)
         // ============================================
-        function loadNote(code) {
-            const note = getNoteById(code);
-            
-            if (!note) {
-                showError('Notulen tidak ditemukan');
-                return;
+        async function loadNoteFromDB(id) {
+            try {
+                // Panggil PHP
+                const response = await fetch(`get_note_detail.php?id=${id}`);
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    renderNote(result.data);
+                } else {
+                    showError(result.message);
+                }
+            } catch (error) {
+                console.error(error);
+                showError('Terjadi kesalahan koneksi ke server.');
             }
-            
-            // Check if note is public or user is logged in
-            // For simplicity, we'll show all notes in this demo
-            
-            renderNote(note);
         }
 
         // ============================================
-        // RENDER NOTE
+        // 3. RENDER TAMPILAN
         // ============================================
         function renderNote(note) {
-            const author = getUserById(note.authorId);
             const container = document.getElementById('noteContent');
+            
+            // Format Peserta (Jika di database masih string text area, kita split)
+            // Jika Anda nanti pakai tabel tbNotesAttendees, logikanya beda lagi.
+            // Untuk sekarang kita anggap 'attendees' belum diambil dari tabel relasi, 
+            // jadi kita skip dulu atau tampilkan manual jika ada kolom text.
             
             container.innerHTML = `
                 <div style="border-bottom: 2px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
@@ -93,75 +105,61 @@
                         ${note.meetingDate ? `<div>📅 ${formatDate(note.meetingDate)}</div>` : ''}
                         ${note.time ? `<div>🕐 ${note.time}</div>` : ''}
                         ${note.location ? `<div>📍 ${escapeHtml(note.location)}</div>` : ''}
+                        <div style="font-weight:600; color:var(--primary)">
+                             ${note.isPublic == 1 ? '🌐 Publik' : '🔒 Privat'}
+                        </div>
                     </div>
                 </div>
 
-                ${note.attendees && note.attendees.length > 0 ? `
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="margin-bottom: 0.5rem;">Peserta</h3>
-                        <ul style="padding-left: 1.5rem;">
-                            ${note.attendees.map(a => `<li>${escapeHtml(a)}</li>`).join('')}
-                        </ul>
-                    </div>
-                ` : ''}
-
-                ${note.agenda ? `
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="margin-bottom: 0.5rem;">Agenda</h3>
-                        <p style="white-space: pre-wrap;">${escapeHtml(note.agenda)}</p>
-                    </div>
-                ` : ''}
-
-                <div style="margin-bottom: 2rem;">
-                    <h3 style="margin-bottom: 0.5rem;">Hasil Pembahasan</h3>
-                    <p style="white-space: pre-wrap;">${escapeHtml(note.content || 'Tidak ada pembahasan')}</p>
-                </div>
-
-                ${note.decisions ? `
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="margin-bottom: 0.5rem;">Keputusan</h3>
-                        <p style="white-space: pre-wrap;">${escapeHtml(note.decisions)}</p>
-                    </div>
-                ` : ''}
-
-                ${note.followUp ? `
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="margin-bottom: 0.5rem;">Tindak Lanjut</h3>
-                        <p style="white-space: pre-wrap;">${escapeHtml(note.followUp)}</p>
-                    </div>
-                ` : ''}
+                ${renderSection('Agenda', note.agenda)}
+                ${renderSection('Hasil Pembahasan', note.content)}
+                ${renderSection('Keputusan', note.decisions)}
+                ${renderSection('Tindak Lanjut', note.followUp)}
 
                 <div style="border-top: 2px solid var(--border); padding-top: 1.5rem; margin-top: 2rem; font-size: 0.875rem; color: var(--text-muted);">
-                    <p>Dibuat oleh ${author ? author.name : 'Unknown'} pada ${formatDate(note.createdAt)}</p>
+                    <p>Dibuat oleh <strong>${escapeHtml(note.authorName || 'Tidak Diketahui')}</strong> pada ${formatDate(note.createdAt)}</p>
+                </div>
+            `;
+        }
+
+        // Helper untuk merender bagian (agar kode tidak berulang)
+        function renderSection(title, content) {
+            if (!content) return '';
+            return `
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 0.5rem;">${title}</h3>
+                    <p style="white-space: pre-wrap; line-height: 1.6;">${escapeHtml(content)}</p>
                 </div>
             `;
         }
 
         // ============================================
-        // SHOW ERROR
+        // 4. ERROR HANDLING
         // ============================================
         function showError(message) {
             const container = document.getElementById('noteContent');
             container.innerHTML = `
                 <div style="text-align: center; padding: 2rem;">
                     <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
-                    <h2>Oops!</h2>
+                    <h2>Gagal Memuat</h2>
                     <p class="text-muted">${message}</p>
-                    <a href="index.html" class="btn btn-primary" style="margin-top: 1rem;">Kembali ke Beranda</a>
+                    <a href="dashboard.html" class="btn btn-primary" style="margin-top: 1rem;">Kembali ke Dashboard</a>
                 </div>
             `;
         }
 
         // ============================================
-        // UTILITY FUNCTIONS
+        // 5. UTILITY FUNCTIONS
         // ============================================
         function escapeHtml(text) {
+            if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
         
         function formatDate(dateString) {
+            if(!dateString) return '-';
             return new Date(dateString).toLocaleDateString('id-ID', {
                 year: 'numeric',
                 month: 'long',
