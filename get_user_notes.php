@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 include 'conn_db_notes.php';
 
-// Ambil NIM/ID user dari parameter URL
+// Cek parameter NIM
 if (!isset($_GET['nim'])) {
     echo json_encode([]);
     exit;
@@ -10,9 +10,26 @@ if (!isset($_GET['nim'])) {
 
 $nim = mysqli_real_escape_string($conn_db_notes, $_GET['nim']);
 
-// Ambil semua notulen milik user ini, urutkan dari yang terbaru
-$query = "SELECT * FROM tbNotesData WHERE authorNim = '$nim' ORDER BY createdAt DESC";
+// === QUERY BARU (LOGIKA GABUNGAN) ===
+// 1. Ambil data notulen (n.*)
+// 2. Gabungkan dengan tabel peserta (a) berdasarkan idNotes
+// 3. Syarat: Entah dia PEMBUATNYA (n.authorNim) ATAU dia PESERTANYA (a.nim)
+// 4. DISTINCT agar jika dia ada di dua tabel, notulen tidak muncul ganda
+
+$query = "SELECT DISTINCT n.* FROM tbnotesdata n 
+          LEFT JOIN tbnotesattendees a ON n.idNotes = a.idNotes 
+          WHERE n.authorNim = '$nim' OR a.nim = '$nim' 
+          ORDER BY n.createdAt DESC";
+
 $result = mysqli_query($conn_db_notes, $query);
+
+// Cek error query
+if (!$result) {
+    // Jika error, kirim array kosong atau pesan debug
+    // echo mysqli_error($conn_db_notes); 
+    echo json_encode([]); 
+    exit;
+}
 
 $notes = [];
 while ($row = mysqli_fetch_assoc($result)) {

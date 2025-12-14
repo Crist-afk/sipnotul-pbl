@@ -8,11 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- 
-        ============================================
-        SIMPLE HEADER
-        ============================================
-    -->
     <header class="site-header">
         <div class="container header-inner">
             <a href="index.html" class="logo" style="color: var(--primary);">
@@ -21,16 +16,11 @@
             </a>
             <div class="header-controls">
                 <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️ Cetak</button>
-                <a href="index.html" class="btn btn-ghost btn-sm">← Kembali</a>
+                <a href="dashboard.html" class="btn btn-ghost btn-sm">← Kembali</a>
             </div>
         </div>
     </header>
 
-    <!-- 
-        ============================================
-        NOTE CONTENT
-        ============================================
-    -->
     <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
         <div class="card" id="noteContent" style="max-width: 800px; margin: 0 auto;">
             <div style="text-align: center; padding: 2rem;">
@@ -40,21 +30,9 @@
         </div>
     </main>
 
-    <!-- Toast container -->
     <div id="toasts" class="toasts"></div>
 
-    <!-- 
-        ============================================
-        JAVASCRIPT
-        ============================================
-    -->
-<script type="module">
-        // Hapus import storage.js karena kita pakai Database
-        // import { getNoteById, getUserById } from './src/storage.js'; 
-        
-        // Helper Toast (Opsional jika file auth.js ada)
-        // import { showToast } from './src/auth.js'; 
-
+    <script type="module">
         // ============================================
         // 1. AMBIL KODE DARI URL
         // ============================================
@@ -93,11 +71,41 @@
         function renderNote(note) {
             const container = document.getElementById('noteContent');
             
-            // Format Peserta (Jika di database masih string text area, kita split)
-            // Jika Anda nanti pakai tabel tbNotesAttendees, logikanya beda lagi.
-            // Untuk sekarang kita anggap 'attendees' belum diambil dari tabel relasi, 
-            // jadi kita skip dulu atau tampilkan manual jika ada kolom text.
+            // --- LOGIKA MENAMPILKAN PESERTA ---
+            let attendeesHtml = '';
             
+            // Cek apakah ada data attendeesList dari database
+            if (note.attendeesList && note.attendeesList.length > 0) {
+                // Loop data peserta dan buat HTML list
+                const listItems = note.attendeesList.map(person => `
+                    <li style="
+                        display: inline-block; 
+                        background: var(--gray-50, #f9fafb); 
+                        border: 1px solid var(--border, #e5e7eb);
+                        padding: 0.25rem 0.75rem; 
+                        border-radius: 20px; 
+                        margin-right: 0.5rem; 
+                        margin-bottom: 0.5rem;
+                        font-size: 0.875rem;">
+                        👤 ${escapeHtml(person.name)} 
+                        ${person.nim && person.nim !== '-' ? `<span style="color: gray; font-size: 0.8em;">(${person.nim})</span>` : ''}
+                    </li>
+                `).join('');
+
+                attendeesHtml = `
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="margin-bottom: 0.75rem;">Daftar Hadir</h3>
+                        <ul style="padding: 0; list-style: none; margin: 0;">
+                            ${listItems}
+                        </ul>
+                    </div>
+                `;
+            } else {
+                // Jika tidak ada data di database (fallback ke text manual jika ada)
+                attendeesHtml = '<div style="margin-bottom: 2rem;"><p class="text-muted">Tidak ada data peserta.</p></div>';
+            }
+            // ----------------------------------
+
             container.innerHTML = `
                 <div style="border-bottom: 2px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
                     <h1 style="margin-bottom: 1rem;">${escapeHtml(note.title)}</h1>
@@ -110,6 +118,8 @@
                         </div>
                     </div>
                 </div>
+
+                ${attendeesHtml}
 
                 ${renderSection('Agenda', note.agenda)}
                 ${renderSection('Hasil Pembahasan', note.content)}

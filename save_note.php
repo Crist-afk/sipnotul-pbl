@@ -2,13 +2,12 @@
 header('Content-Type: application/json');
 include 'conn_db_notes.php';
 
-// Cek Method
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
     exit;
 }
 
-// 1. AMBIL DATA UTAMA NOTULEN
+// Ambil Data
 $idNotes      = isset($_POST['idNotes']) ? $_POST['idNotes'] : '';
 $title        = $_POST['title'];
 $content      = $_POST['content'];
@@ -19,28 +18,23 @@ $decisions    = $_POST['decisions'];
 $followUp     = $_POST['followUp'];
 $authorNim    = $_POST['authorNim'];
 $isPublic     = isset($_POST['isPublic']) ? 1 : 0;
-
-// 2. AMBIL DATA PESERTA (Dikirim sebagai Array JSON String dari JS)
 $attendeesJson = isset($_POST['attendees']) ? $_POST['attendees'] : '[]';
-$attendees     = json_decode($attendeesJson, true); // Ubah jadi Array PHP
+$attendees     = json_decode($attendeesJson, true);
 
-// Mulai Transaksi (Agar jika satu gagal, semua batal)
 mysqli_begin_transaction($conn_db_notes);
 
 try {
-    // A. SIMPAN/UPDATE DATA NOTULEN
+    // 1. SIMPAN DATA NOTULEN
     if (empty($idNotes)) {
-        // --- BARU ---
         $newId = 'NOT' . strtoupper(uniqid()); 
-        $idNotes = $newId; // Set ID untuk dipakai di tabel peserta
+        $idNotes = $newId;
 
-        $queryNote = "INSERT INTO tbNotesData 
+        $queryNote = "INSERT INTO tbnotesdata 
                   (idNotes, title, content, meetingDate, time, location, decisions, followUp, authorNim, isPublic, createdAt) 
                   VALUES 
                   ('$newId', '$title', '$content', '$meetingDate', '$time', '$location', '$decisions', '$followUp', '$authorNim', '$isPublic', NOW())";
     } else {
-        // --- UPDATE ---
-        $queryNote = "UPDATE tbNotesData SET 
+        $queryNote = "UPDATE tbnotesdata SET 
                   title = '$title', content = '$content', meetingDate = '$meetingDate', 
                   time = '$time', location = '$location', decisions = '$decisions', 
                   followUp = '$followUp', isPublic = '$isPublic'
@@ -48,38 +42,51 @@ try {
     }
 
     if (!mysqli_query($conn_db_notes, $queryNote)) {
-        throw new Exception("Gagal menyimpan data notulen: " . mysqli_error($conn_db_notes));
+        throw new Exception("Gagal menyimpan notulen: " . mysqli_error($conn_db_notes));
     }
 
-    // B. SIMPAN PESERTA (Hapus dulu yang lama, masukkan yang baru)
-    // 1. Hapus peserta lama untuk notulen ini (Reset)
-    $deleteAttendees = "DELETE FROM tbNotesAttendees WHERE idNotes = '$idNotes'";
+    // 2. SIMPAN DATA PESERTA
+    // Hapus peserta lama dulu (Reset)
+    $deleteAttendees = "DELETE FROM tbnotesattendees WHERE idNotes = '$idNotes'";
     mysqli_query($conn_db_notes, $deleteAttendees);
 
-    // 2. Masukkan peserta baru
     if (!empty($attendees)) {
         foreach ($attendees as $person) {
-            $nim  = mysqli_real_escape_string($conn_db_notes, $person['nim']);
-            $name = mysqli_real_escape_string($conn_db_notes, $person['name']);
+            $inputNim  = mysqli_real_escape_string($conn_db_notes, $person['nim']);
+            $inputName = mysqli_real_escape_string($conn_db_notes, $person['name']);
             
-            $insertAttendee = "INSERT INTO tbNotesAttendees (idNotes, nim, name) VALUES ('$idNotes', '$nim', '$name')";
+            // ========================================================
+            // [LOGIKA BARU] PENCARIAN NIM OTOMATIS (AUTO-LINK)
+            // ========================================================
+            $finalNim = $inputNim;
+
+            // Jika NIM yang dikirim kosong atau tanda strip ('-')
+            if ($inputNim == '-' || empty($inputNim)) {
+                // Cek ke database user (dbusers.tbusers) berdasarkan Nama
+                $queryCheckUser = "SELECT nim FROM dbusers.tbusers WHERE name LIKE '$inputName' LIMIT 1";
+                $resultUser = mysqli_query($conn_db_notes, $queryCheckUser);
+                
+                // Jika ketemu, update $finalNim dengan NIM asli dari database
+                if ($resultUser && mysqli_num_rows($resultUser) > 0) {
+                    $userData = mysqli_fetch_assoc($resultUser);
+                    $finalNim = $userData['nim'];
+                }
+            }
+            // ========================================================
+
+            // Insert ke database menggunakan $finalNim (NIM Asli atau tetap strip)
+            $insertAttendee = "INSERT INTO tbnotesattendees (idNotes, nim, name) VALUES ('$idNotes', '$finalNim', '$inputName')";
+            
             if (!mysqli_query($conn_db_notes, $insertAttendee)) {
                 throw new Exception("Gagal menyimpan peserta: " . mysqli_error($conn_db_notes));
             }
         }
     }
 
-    // Jika semua lancar, COMMIT
     mysqli_commit($conn_db_notes);
-    
-    echo json_encode([
-        'status' => 'success', 
-        'message' => 'Notulen dan peserta berhasil disimpan',
-        'id' => $idNotes
-    ]);
+    echo json_encode(['status' => 'success', 'message' => 'Berhasil disimpan', 'id' => $idNotes]);
 
 } catch (Exception $e) {
-    // Jika ada error, BATALKAN SEMUA
     mysqli_rollback($conn_db_notes);
     echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
 }
