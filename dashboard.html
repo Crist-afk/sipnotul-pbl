@@ -196,490 +196,264 @@
         ============================================
         Dashboard functionality
     -->
-    <script type="module">
+<script type="module">
         import { requireAuth, getCurrentUser, logout, showToast } from './src/auth.js';
-        import { getAllNotes, getNotesByAuthor, deleteNote, getAllMeetings, getMeetingsForUser, saveMeeting, deleteMeeting, getAllUsers } from './src/storage.js';
         
-        // Calendar state
+        // ============================================
+        // STATE MANAGEMENT
+        // ============================================
+        let allNotes = []; // Menyimpan data dari Database
         let currentCalendarMonth = new Date().getMonth();
         let currentCalendarYear = new Date().getFullYear();
 
         // ============================================
-        // CHECK AUTHENTICATION
+        // CHECK AUTH & INIT
         // ============================================
-        // Redirect to home if not logged in
-        if (!requireAuth()) {
-            // Will redirect, no need to continue
-        }
+        if (!requireAuth()) { /* Redirect handled by auth.js */ }
 
-        // Get current user
         const user = getCurrentUser();
-        console.log('[DASHBOARD] User:', user.name);
-
-        // Update user name in header
         document.getElementById('userName').textContent = user.name;
 
-        // ============================================
-        // UPDATE STATISTICS
-        // ============================================
-        function updateStats() {
-            const userNotes = getNotesByAuthor(user.id);
-            const now = new Date();
-            const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
-            
-            // Calculate stats
-            const stats = {
-                total: userNotes.length,
-                thisWeek: userNotes.filter(n => new Date(n.createdAt) >= weekStart).length,
-                pending: userNotes.filter(n => n.followUp && !n.followUpCompleted).length
-            };
-            
-            // Update DOM
-            document.getElementById('totalNotes').textContent = stats.total;
-            document.getElementById('weeklyMeetings').textContent = stats.thisWeek;
-            document.getElementById('pendingTasks').textContent = stats.pending;
-            
-            console.log('[DASHBOARD] Stats updated:', stats);
-        }
+        // Load Data saat halaman dibuka
+        loadDashboardData();
 
         // ============================================
-        // RENDER RECENT NOTES
+        // 1. LOAD DATA DARI DATABASE (PHP)
         // ============================================
-        function renderRecentNotes() {
-            const userNotes = getNotesByAuthor(user.id).slice(0, 6); // Get first 6 notes
-            const container = document.getElementById('recentNotes');
-            
-            if (userNotes.length === 0) {
-                container.innerHTML = '<p class="text-muted">Belum ada notulen. Buat notulen pertama Anda!</p>';
-                return;
-            }
-            
-            // Generate HTML for each note
-            container.innerHTML = userNotes.map(note => `
-                <div class="note-card card">
-                    <div class="note-title">${escapeHtml(note.title)}</div>
-                    <div class="note-meta">${formatDate(note.createdAt)}</div>
-                    <div class="note-content">${escapeHtml((note.content || '').substring(0, 100))}...</div>
-                    <div class="note-actions">
-                        <button class="btn btn-secondary btn-sm" onclick="viewNote('${note.id}')">👁️ Lihat</button>
-                        <button class="btn btn-secondary btn-sm" onclick="editNote('${note.id}')">✏️ Edit</button>
-                        <button class="btn btn-danger btn-sm" onclick="handleDeleteNote('${note.id}')">🗑️ Hapus</button>
-                    </div>
-                </div>
-            `).join('');
-            
-            console.log('[DASHBOARD] Rendered', userNotes.length, 'recent notes');
-        }
-
-        // ============================================
-        // RENDER CALENDAR PREVIEW
-        // ============================================
-        function renderCalendar() {
-            const now = new Date();
-            
-            // Get all meetings for user
-            const meetings = getMeetingsForUser(user.id);
-            const meetingDates = new Set(meetings.map(m => m.meetingDate));
-            
-            // Get first day of month and number of days
-            const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1).getDay();
-            const daysInMonth = new Date(currentCalendarYear, currentCalendarMonth + 1, 0).getDate();
-            
-            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-            const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-            
-            // Update month/year display
-            document.getElementById('currentMonthYear').textContent = `${monthNames[currentCalendarMonth]} ${currentCalendarYear}`;
-            
-            let calendarHTML = `<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; text-align: center;">`;
-            
-            // Day headers
-            dayNames.forEach(day => {
-                calendarHTML += `<div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); padding: 0.25rem;">${day}</div>`;
-            });
-            
-            // Empty cells before first day
-            for (let i = 0; i < firstDay; i++) {
-                calendarHTML += `<div></div>`;
-            }
-            
-            // Days of month
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateStr = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const isToday = day === now.getDate() && currentCalendarMonth === now.getMonth() && currentCalendarYear === now.getFullYear();
-                const hasMeeting = meetingDates.has(dateStr);
-                
-                const bgColor = isToday ? 'var(--primary)' : hasMeeting ? 'var(--success)' : 'var(--white)';
-                const textColor = (isToday || hasMeeting) ? 'white' : 'var(--text)';
-                
-                calendarHTML += `
-                    <div 
-                        onclick="${hasMeeting ? `showMeetingDetails('${dateStr}')` : ''}"
-                        style="
-                        padding: 0.5rem;
-                        background: ${bgColor};
-                        color: ${textColor};
-                        border-radius: var(--radius-sm);
-                        font-size: 0.875rem;
-                        font-weight: ${hasMeeting ? '600' : '400'};
-                        cursor: ${hasMeeting ? 'pointer' : 'default'};
-                        border: 1px solid var(--border);
-                        transition: transform 0.2s;
-                    " ${hasMeeting ? 'onmouseover="this.style.transform=\'scale(1.1)\'" onmouseout="this.style.transform=\'scale(1)\'"' : ''}>${day}</div>
-                `;
-            }
-            
-            calendarHTML += `</div>`;
-            
-            document.getElementById('calendarGrid').innerHTML = calendarHTML;
-        }
-
-        // ============================================
-        // RENDER UPCOMING MEETINGS
-        // ============================================
-        function renderUpcomingMeetings() {
-            // Get meetings for current user
-            const userMeetings = getMeetingsForUser(user.id)
-                .filter(m => m.meetingDate && new Date(m.meetingDate) >= new Date().setHours(0,0,0,0))
-                .sort((a, b) => new Date(a.meetingDate) - new Date(b.meetingDate))
-                .slice(0, 10);
-            
-            const container = document.getElementById('upcomingMeetings');
-            
-            if (userMeetings.length === 0) {
-                container.innerHTML = '<p class="text-muted">Tidak ada rapat mendatang</p>';
-                return;
-            }
-            
-            // Generate HTML for each meeting
-            container.innerHTML = userMeetings.map(meeting => {
-                const isMyMeeting = meeting.authorId === user.id;
-                const isInvited = meeting.invitedUsers && meeting.invitedUsers.includes(user.id);
-                return `
-                <div style="display: flex; gap: 1rem; padding: 1rem; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 0.5rem; border-left: 3px solid ${isMyMeeting ? 'var(--primary)' : 'var(--success)'};">
-                    <div style="text-align: center; min-width: 60px;">
-                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${new Date(meeting.meetingDate).getDate()}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">${new Date(meeting.meetingDate).toLocaleString('id', {month: 'short'})}</div>
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 600; margin-bottom: 0.25rem;">${escapeHtml(meeting.title)}</div>
-                        <div style="font-size: 0.875rem; color: var(--text-muted);">
-                            ${meeting.time || 'TBD'} - ${meeting.location || 'TBD'}
-                        </div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                            ${isMyMeeting ? '👤 Rapat Anda' : isInvited ? '📧 Diundang' : '👥 Rapat Publik'}
-                        </div>
-                    </div>
-                </div>
-            `}).join('');
-            
-            console.log('[DASHBOARD] Rendered', userMeetings.length, 'upcoming meetings');
-        } 
-
-        // ============================================
-        // UTILITY FUNCTIONS
-        // ============================================
-        
-        // Escape HTML to prevent XSS
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        // Format date to Indonesian locale
-        function formatDate(dateString) {
-            return new Date(dateString).toLocaleDateString('id-ID', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        }
-
-        // ============================================
-        // MODAL CONTROLS
-        // ============================================
-        window.closeAddMeetingModal = () => {
-            document.getElementById('addMeetingModal').classList.remove('show');
-        };
-
-        window.closeMeetingDetailsModal = () => {
-            document.getElementById('viewMeetingModal').classList.remove('show');
-        };
-
-        // ============================================
-        // SHOW MEETING DETAILS
-        // ============================================
-        window.showMeetingDetails = (dateStr) => {
-            // Get all meetings for this date that user can see
-            const meetings = getMeetingsForUser(user.id).filter(m => m.meetingDate === dateStr);
-            
-            if (meetings.length === 0) return;
-            
-            // Format date
-            const date = new Date(dateStr);
-            const formattedDate = date.toLocaleDateString('id-ID', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            
-            document.getElementById('meetingDetailDate').textContent = formattedDate;
-            
-            // Generate HTML for all meetings on this date
-            let detailsHTML = '';
-            
-            meetings.forEach((meeting, index) => {
-                // Get author info
-                const author = getAllNotes().find(n => n.authorId === meeting.authorId);
-                const authorName = author ? getUserName(meeting.authorId) : 'Unknown';
-                const isMyMeeting = meeting.authorId === user.id;
-                
-                detailsHTML += `
-                    <div style="padding: 1rem; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: ${index < meetings.length - 1 ? '1rem' : '0'}; border-left: 3px solid ${isMyMeeting ? 'var(--primary)' : 'var(--success)'};">
-                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
-                            <h3 style="margin: 0; color: var(--primary);">${escapeHtml(meeting.title)}</h3>
-                            <span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; background: ${isMyMeeting ? 'var(--primary)' : 'var(--success)'}; color: white;">
-                                ${isMyMeeting ? '👤 Rapat Anda' : '👥 Rapat Tim'}
-                            </span>
-                        </div>
-                        
-                        <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <span style="font-weight: 600; min-width: 100px;">⏰ Waktu:</span>
-                                <span>${meeting.time || 'Belum ditentukan'}</span>
-                            </div>
-                            
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <span style="font-weight: 600; min-width: 100px;">📍 Lokasi:</span>
-                                <span>${escapeHtml(meeting.location || 'Belum ditentukan')}</span>
-                            </div>
-                            
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <span style="font-weight: 600; min-width: 100px;">👤 Dibuat oleh:</span>
-                                <span>${escapeHtml(authorName)}</span>
-                            </div>
-                            
-                            ${meeting.content && meeting.content !== `Rapat: ${meeting.title}` ? `
-                            <div style="margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border);">
-                                <span style="font-weight: 600;">📝 Deskripsi:</span>
-                                <p style="margin: 0.5rem 0 0 0; color: var(--text-muted);">${escapeHtml(meeting.content)}</p>
-                            </div>
-                            ` : ''}
-                            
-                            ${meeting.attendees && meeting.attendees.length > 0 ? `
-                            <div style="margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border);">
-                                <span style="font-weight: 600;">👥 Peserta:</span>
-                                <p style="margin: 0.5rem 0 0 0; color: var(--text-muted);">${meeting.attendees.join(', ')}</p>
-                            </div>
-                            ` : ''}
-                        </div>
-                        
-                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
-                            <button class="btn btn-secondary btn-sm" onclick="window.location.href='viewer.html?code=${meeting.id}'">👁️ Lihat Detail</button>
-                            ${isMyMeeting ? `<button class="btn btn-secondary btn-sm" onclick="window.location.href='editor.html?id=${meeting.id}'">✏️ Edit</button>` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-            
-            document.getElementById('meetingDetailTitle').textContent = meetings.length === 1 ? 'Detail Rapat' : `${meetings.length} Rapat`;
-            document.getElementById('meetingDetailsContent').innerHTML = detailsHTML;
-            document.getElementById('viewMeetingModal').classList.add('show');
-        };
-
-        // Helper function to get user name by ID
-        function getUserName(userId) {
-            // Try to find in demo users first
-            const demoUsers = [
-                { id: 2101, name: 'Demo User' },
-                { id: 2102, name: 'Crist Garcia Pasaribu' },
-                { id: 2103, name: 'Cahyati Lamona Sitohang' },
-                { id: 2104, name: 'Fazri Rahman' },
-                { id: 2105, name: 'Takanashi Hoshino' }
-            ];
-            
-            const demoUser = demoUsers.find(u => u.id === userId);
-            if (demoUser) return demoUser.name;
-            
-            // Try registered users
+        async function loadDashboardData() {
             try {
-                const registered = JSON.parse(localStorage.getItem('sipenotul_registered_users') || '[]');
-                const regUser = registered.find(u => u.id === userId);
-                if (regUser) return regUser.name;
-            } catch (e) {
-                console.error('[DASHBOARD] Error getting user name:', e);
-            }
-            
-            return 'Unknown User';
-        }
+                // Panggil file PHP yang baru kita buat
+                const response = await fetch(`get_user_notes.php?nim=${user.nim || user.id}`);
+                allNotes = await response.json();
 
-        // ============================================
-        // GLOBAL FUNCTIONS (for onclick handlers)
-        // ============================================
-        
-        window.viewNote = (id) => window.location.href = `viewer.html?code=${id}`;
-        window.editNote = (id) => window.location.href = `editor.html?id=${id}`;
-        
-        window.handleDeleteNote = (id) => {
-            if (confirm('Apakah Anda yakin ingin menghapus notulen ini?')) {
-                deleteNote(id);
-                showToast('Notulen berhasil dihapus', 'success');
+                // Setelah data didapat, update semua tampilan
                 updateStats();
                 renderRecentNotes();
                 renderCalendar();
                 renderUpcomingMeetings();
+
+                console.log('[DASHBOARD] Data loaded:', allNotes.length, 'notes');
+            } catch (error) {
+                console.error('Gagal memuat data:', error);
+                showToast('Gagal terhubung ke database', 'error');
+            }
+        }
+
+        // ============================================
+        // 2. UPDATE STATISTIK
+        // ============================================
+        function updateStats() {
+            const now = new Date();
+            // Menghitung awal minggu ini (Minggu - Sabtu)
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay());
+            startOfWeek.setHours(0,0,0,0);
+
+            // Hitung Statistik
+            const total = allNotes.length;
+            
+            // Hitung rapat minggu ini (Notulen yang punya meetingDate di minggu ini)
+            const meetingsThisWeek = allNotes.filter(n => {
+                if (!n.meetingDate) return false;
+                const mDate = new Date(n.meetingDate);
+                return mDate >= startOfWeek && mDate <= new Date(startOfWeek.getTime() + 6 * 24 * 60 * 60 * 1000);
+            }).length;
+
+            // Hitung Tugas/Pending (Logic: punya followUp dan belum selesai)
+            // Catatan: Pastikan kolom followUpCompleted di DB bernilai 0 atau 1
+            const pending = allNotes.filter(n => n.followUp && n.followUpCompleted == '0').length;
+
+            // Tampilkan ke layar
+            document.getElementById('totalNotes').textContent = total;
+            document.getElementById('weeklyMeetings').textContent = meetingsThisWeek;
+            document.getElementById('pendingTasks').textContent = pending;
+        }
+
+        // ============================================
+        // 3. RENDER NOTULEN TERBARU
+        // ============================================
+        function renderRecentNotes() {
+            const container = document.getElementById('recentNotes');
+            const recent = allNotes.slice(0, 6); // Ambil 6 data pertama
+
+            if (recent.length === 0) {
+                container.innerHTML = '<p class="text-muted">Belum ada notulen. Buat notulen pertama Anda!</p>';
+                return;
+            }
+
+            container.innerHTML = recent.map(note => `
+                <div class="note-card card">
+                    <div class="note-title">${escapeHtml(note.title)}</div>
+                    <div class="note-meta">📅 ${formatDate(note.createdAt)}</div>
+                    <div class="note-content">${escapeHtml((note.content || '').substring(0, 100))}...</div>
+                    <div class="note-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="window.location.href='viewer.html?code=${note.idNotes}'">👁️ Lihat</button>
+                        <button class="btn btn-secondary btn-sm" onclick="window.location.href='editor.html?id=${note.idNotes}'">✏️ Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="handleDeleteNote('${note.idNotes}')">🗑️ Hapus</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ============================================
+        // 4. RENDER KALENDER (Berdasarkan MeetingDate)
+        // ============================================
+        function renderCalendar() {
+            const now = new Date();
+            
+            // Cari tanggal-tanggal yang ada rapatnya
+            const meetingDates = new Set(allNotes
+                .filter(n => n.meetingDate)
+                .map(n => n.meetingDate)
+            );
+
+            // Logika Kalender Standar
+            const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1).getDay();
+            const daysInMonth = new Date(currentCalendarYear, currentCalendarMonth + 1, 0).getDate();
+            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+
+            document.getElementById('currentMonthYear').textContent = `${monthNames[currentCalendarMonth]} ${currentCalendarYear}`;
+
+            let html = `<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; text-align: center;">`;
+            
+            // Header Hari
+            dayNames.forEach(day => html += `<div style="font-size:0.75rem; color:var(--text-muted);">${day}</div>`);
+            
+            // Kotak Kosong
+            for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+
+            // Tanggal
+            for (let day = 1; day <= daysInMonth; day++) {
+                // Format YYYY-MM-DD
+                const dateStr = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                const isToday = day === now.getDate() && currentCalendarMonth === now.getMonth() && currentCalendarYear === now.getFullYear();
+                const hasMeeting = meetingDates.has(dateStr);
+
+                let bg = isToday ? 'var(--primary)' : (hasMeeting ? 'var(--success)' : '#fff');
+                let color = (isToday || hasMeeting) ? '#fff' : '#333';
+                let cursor = hasMeeting ? 'pointer' : 'default';
+
+                html += `
+                    <div onclick="${hasMeeting ? `showMeetingDetails('${dateStr}')` : ''}"
+                         style="padding:0.5rem; background:${bg}; color:${color}; border-radius:4px; font-size:0.875rem; cursor:${cursor}; border:1px solid #eee;">
+                        ${day}
+                    </div>
+                `;
+            }
+            html += `</div>`;
+            document.getElementById('calendarGrid').innerHTML = html;
+        }
+
+        // ============================================
+        // 5. RENDER RAPAT MENDATANG
+        // ============================================
+        function renderUpcomingMeetings() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            
+            // Filter notulen yang punya tanggal meeting >= hari ini
+            const upcoming = allNotes
+                .filter(n => n.meetingDate && n.meetingDate >= todayStr)
+                .sort((a, b) => new Date(a.meetingDate) - new Date(b.meetingDate))
+                .slice(0, 5);
+
+            const container = document.getElementById('upcomingMeetings');
+            
+            if (upcoming.length === 0) {
+                container.innerHTML = '<p class="text-muted">Tidak ada jadwal rapat mendatang.</p>';
+                return;
+            }
+
+            container.innerHTML = upcoming.map(note => `
+                <div style="display: flex; gap: 1rem; padding: 1rem; background: var(--gray-50); border-radius: 8px; margin-bottom: 0.5rem; border-left: 4px solid var(--primary);">
+                    <div style="text-align: center; min-width: 60px;">
+                        <div style="font-size: 1.2rem; font-weight: 700; color: var(--primary);">${new Date(note.meetingDate).getDate()}</div>
+                        <div style="font-size: 0.75rem; text-transform: uppercase;">${new Date(note.meetingDate).toLocaleString('id', {month: 'short'})}</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600;">${escapeHtml(note.title)}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">
+                            🕒 ${note.time || '-'} | 📍 ${note.location || '-'}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ============================================
+        // UTILS & GLOBAL HANDLERS
+        // ============================================
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        // Fungsi Global untuk Tombol Hapus
+        window.handleDeleteNote = async (id) => {
+            if (!confirm('Yakin ingin menghapus notulen ini?')) return;
+
+            try {
+                const res = await fetch('delete_note.php', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: id }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await res.json();
+                
+                if (result.status === 'success') {
+                    showToast('Berhasil dihapus', 'success');
+                    loadDashboardData(); // Refresh data tanpa reload page
+                } else {
+                    showToast('Gagal menghapus: ' + result.message, 'error');
+                }
+            } catch (err) {
+                showToast('Error koneksi', 'error');
             }
         };
 
-        // ============================================
-        // EVENT LISTENERS
-        // ============================================
-        
-        // Add meeting button
-        document.getElementById('addMeetingBtn').addEventListener('click', () => {
-            document.getElementById('addMeetingModal').classList.add('show');
-            // Set default date to today
-            document.getElementById('meetingDate').valueAsDate = new Date();
-            
-            // Load user list for participant selection
-            loadUserList();
-        });
-
-        // Public/Private toggle
-        document.getElementById('meetingIsPublic').addEventListener('change', (e) => {
-            const participantSelection = document.getElementById('participantSelection');
-            participantSelection.style.display = e.target.checked ? 'none' : 'block';
-        });
-
-        // Month navigation
+        // Navigasi Bulan Kalender
         document.getElementById('prevMonthBtn').addEventListener('click', () => {
             currentCalendarMonth--;
-            if (currentCalendarMonth < 0) {
-                currentCalendarMonth = 11;
-                currentCalendarYear--;
-            }
+            if(currentCalendarMonth < 0) { currentCalendarMonth = 11; currentCalendarYear--; }
             renderCalendar();
         });
-
         document.getElementById('nextMonthBtn').addEventListener('click', () => {
             currentCalendarMonth++;
-            if (currentCalendarMonth > 11) {
-                currentCalendarMonth = 0;
-                currentCalendarYear++;
-            }
+            if(currentCalendarMonth > 11) { currentCalendarMonth = 0; currentCalendarYear++; }
             renderCalendar();
         });
 
-        // Load user list for participant selection
-        function loadUserList() {
-            const allUsers = getAllUsers();
-            const container = document.getElementById('userCheckboxes');
-            
-            container.innerHTML = allUsers
-                .filter(u => u.id !== user.id) // Exclude current user
-                .map(u => `
-                    <label style="display: block; padding: 0.5rem; cursor: pointer; border-radius: var(--radius-sm); transition: background 0.2s;" onmouseover="this.style.background='var(--gray-100)'" onmouseout="this.style.background='transparent'">
-                        <input type="checkbox" name="invitedUsers" value="${u.id}" style="margin-right: 0.5rem;">
-                        ${escapeHtml(u.name)} ${u.nim ? `(${u.nim})` : ''}
-                    </label>
-                `).join('');
-        }
-
-        // Add meeting form submission
-        document.getElementById('addMeetingForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const title = document.getElementById('meetingTitle').value.trim();
-            const date = document.getElementById('meetingDate').value;
-            const time = document.getElementById('meetingTime').value;
-            const location = document.getElementById('meetingLocation').value.trim();
-            const description = document.getElementById('meetingDescription').value.trim();
-            const isPublic = document.getElementById('meetingIsPublic').checked;
-            
-            // Get invited users if not public
-            let invitedUsers = [];
-            if (!isPublic) {
-                const checkboxes = document.querySelectorAll('input[name="invitedUsers"]:checked');
-                invitedUsers = Array.from(checkboxes).map(cb => parseInt(cb.value));
-            }
-            
-            // Create new meeting
-            const newMeeting = {
-                title: title,
-                meetingDate: date,
-                time: time,
-                location: location,
-                content: description || `Rapat: ${title}`,
-                authorId: user.id,
-                isPublic: isPublic,
-                invitedUsers: invitedUsers,
-                type: 'meeting'
-            };
-            
-            // Save to storage
-            saveMeeting(newMeeting);
-            
-            showToast('Rapat berhasil ditambahkan!', 'success');
-            
-            // Reset form and close modal
-            document.getElementById('addMeetingForm').reset();
-            document.getElementById('meetingIsPublic').checked = true;
-            document.getElementById('participantSelection').style.display = 'none';
-            closeAddMeetingModal();
-            
-            // Refresh displays
-            updateStats();
-            renderCalendar();
-            renderUpcomingMeetings();
-        });
-        
-        // New note buttons
-        document.getElementById('newNoteBtn').addEventListener('click', () => {
-            window.location.href = 'editor.html';
-        });
-        
-        document.getElementById('newNoteBtn2').addEventListener('click', () => {
-            window.location.href = 'editor.html';
-        });
-        
-        // View all button
-        document.getElementById('viewAllBtn').addEventListener('click', () => {
-            window.location.href = 'manage.html';
-        });
-        
-        // Logout button
+        // Tombol Logout
         document.getElementById('logoutBtn').addEventListener('click', () => {
-            if (confirm('Anda yakin ingin keluar?')) {
-                logout();
-            }
+            if (confirm('Keluar aplikasi?')) logout();
         });
+
+        // Tombol Buat Baru
+        document.getElementById('newNoteBtn').addEventListener('click', () => window.location.href = 'editor.html');
+        document.getElementById('newNoteBtn2').addEventListener('click', () => window.location.href = 'editor.html');
         
-        // User menu toggle
+        // Modal & User Menu Handlers
         document.getElementById('userMenuBtn').addEventListener('click', (e) => {
             e.stopPropagation();
             document.querySelector('.user-menu').classList.toggle('open');
         });
-        
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.user-menu')) {
-                document.querySelectorAll('.user-menu.open').forEach(menu => {
-                    menu.classList.remove('open');
-                });
-            }
-        });
+        document.addEventListener('click', () => document.querySelector('.user-menu').classList.remove('open'));
 
-        // ============================================
-        // INITIALIZE
-        // ============================================
-        updateStats();
-        renderRecentNotes();
-        renderCalendar();
-        renderUpcomingMeetings();
-        
-        console.log('[DASHBOARD] Initialized successfully');
+        // Fitur klik tanggal kalender (Menampilkan notulen di tanggal itu)
+        window.showMeetingDetails = (dateStr) => {
+            const meetings = allNotes.filter(n => n.meetingDate === dateStr);
+            if(meetings.length > 0) {
+                alert(`Agenda pada ${dateStr}:\n` + meetings.map(m => `- ${m.title} (${m.time})`).join('\n'));
+            }
+        };
+
     </script>
 </body>
 </html>

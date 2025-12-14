@@ -103,46 +103,69 @@
         JAVASCRIPT
         ============================================
     -->
-    <script type="module">
+ <script type="module">
         import { requireAuth, getCurrentUser, logout, showToast } from './src/auth.js';
-        import { getAllNotes, getNotesByAuthor, deleteNote } from './src/storage.js';
+        
+        // HAPUS import storage.js, kita ganti dengan variable array
+        let dbNotes = []; // Wadah untuk menyimpan data dari database
+        let searchQuery = '';
+        let currentSort = 'newest';
 
         // ============================================
-        // CHECK AUTHENTICATION
+        // CHECK AUTH & INIT
         // ============================================
-        if (!requireAuth()) {
-            // Will redirect, no need to continue
-        }
+        if (!requireAuth()) { /* Redirect handled */ }
 
         const user = getCurrentUser();
         console.log('[MANAGE] User:', user.name);
         document.getElementById('userName').textContent = user.name;
 
-        // ============================================
-        // STATE
-        // ============================================
-        let searchQuery = '';
-        let currentSort = 'newest';
+        // LOAD DATA PERTAMA KALI
+        loadNotesFromDB();
 
         // ============================================
-        // UPDATE STATISTICS
+        // 1. AMBIL DATA DARI SERVER (PHP)
         // ============================================
-        function updateStats() {
-            const userNotes = getNotesByAuthor(user.id);
-            const publicCount = userNotes.filter(n => n.isPublic).length;
-            
-            document.getElementById('totalNotes').textContent = userNotes.length;
-            document.getElementById('publicNotes').textContent = publicCount;
-            document.getElementById('privateNotes').textContent = userNotes.length - publicCount;
+        async function loadNotesFromDB() {
+            try {
+                // Panggil file PHP
+                const response = await fetch(`get_user_notes.php?nim=${user.nim || user.id}`);
+                const data = await response.json();
+                
+                // Simpan ke variabel global
+                dbNotes = data;
+
+                // Update Tampilan
+                updateStats();
+                renderNotes();
+                
+                console.log('[MANAGE] Notes loaded:', dbNotes.length);
+            } catch (error) {
+                console.error('Error loading notes:', error);
+                showToast('Gagal memuat data dari database', 'error');
+            }
         }
 
         // ============================================
-        // GET FILTERED AND SORTED NOTES
+        // 2. UPDATE STATISTICS
+        // ============================================
+        function updateStats() {
+            // Hitung statistik dari data database (dbNotes)
+            const publicCount = dbNotes.filter(n => n.isPublic == 1).length;
+            
+            document.getElementById('totalNotes').textContent = dbNotes.length;
+            document.getElementById('publicNotes').textContent = publicCount;
+            document.getElementById('privateNotes').textContent = dbNotes.length - publicCount;
+        }
+
+        // ============================================
+        // 3. FILTER & SORT LOGIC
         // ============================================
         function getFilteredNotes() {
-            let notes = getNotesByAuthor(user.id);
+            // Gunakan spread operator [...] agar array asli tidak rusak
+            let notes = [...dbNotes]; 
             
-            // Apply search filter
+            // Filter Pencarian
             if (searchQuery) {
                 const query = searchQuery.toLowerCase();
                 notes = notes.filter(n => 
@@ -152,7 +175,7 @@
                 );
             }
             
-            // Apply sorting
+            // Sorting / Pengurutan
             notes.sort((a, b) => {
                 switch (currentSort) {
                     case 'newest':
@@ -162,7 +185,6 @@
                     case 'title':
                         return a.title.localeCompare(b.title);
                     case 'meeting':
-                        if (!a.meetingDate && !b.meetingDate) return 0;
                         if (!a.meetingDate) return 1;
                         if (!b.meetingDate) return -1;
                         return new Date(a.meetingDate) - new Date(b.meetingDate);
@@ -175,7 +197,7 @@
         }
 
         // ============================================
-        // RENDER NOTES
+        // 4. RENDER (TAMPILKAN KE LAYAR)
         // ============================================
         function renderNotes() {
             const notes = getFilteredNotes();
@@ -191,13 +213,12 @@
             container.style.display = 'grid';
             emptyState.style.display = 'none';
             
-            // Generate HTML for each note
             container.innerHTML = notes.map(note => `
                 <div class="note-card card">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
                         <div class="note-title">${escapeHtml(note.title)}</div>
-                        <span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; ${note.isPublic ? 'background: #d1fae5; color: #065f46;' : 'background: var(--gray-100); color: var(--text-muted);'}">
-                            ${note.isPublic ? '🌐 Publik' : '🔒 Privat'}
+                        <span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; ${note.isPublic == 1 ? 'background: #d1fae5; color: #065f46;' : 'background: var(--gray-100); color: var(--text-muted);'}">
+                            ${note.isPublic == 1 ? '🌐 Publik' : '🔒 Privat'}
                         </span>
                     </div>
                     <div style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 0.5rem;">
@@ -207,20 +228,19 @@
                     </div>
                     <div class="note-content">${escapeHtml((note.content || '').substring(0, 150))}...</div>
                     <div class="note-actions">
-                        <button class="btn btn-secondary btn-sm" onclick="viewNote('${note.id}')">👁️ Lihat</button>
-                        <button class="btn btn-secondary btn-sm" onclick="editNote('${note.id}')">✏️ Edit</button>
-                        <button class="btn btn-danger btn-sm" onclick="handleDeleteNote('${note.id}')">🗑️ Hapus</button>
+                        <button class="btn btn-secondary btn-sm" onclick="window.location.href='viewer.html?code=${note.idNotes}'">👁️ Lihat</button>
+                        <button class="btn btn-secondary btn-sm" onclick="window.location.href='editor.html?id=${note.idNotes}'">✏️ Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="handleDeleteNote('${note.idNotes}')">🗑️ Hapus</button>
                     </div>
                 </div>
             `).join('');
-            
-            console.log('[MANAGE] Rendered', notes.length, 'notes');
         }
 
         // ============================================
-        // UTILITY FUNCTIONS
+        // UTILS
         // ============================================
         function escapeHtml(text) {
+            if (!text) return "";
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
@@ -228,80 +248,62 @@
         
         function formatDate(dateString) {
             return new Date(dateString).toLocaleDateString('id-ID', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
+                year: 'numeric', month: 'long', day: 'numeric'
             });
         }
 
         // ============================================
-        // GLOBAL FUNCTIONS
+        // ACTION HANDLERS
         // ============================================
-        window.viewNote = (id) => window.location.href = `viewer.html?code=${id}`;
-        window.editNote = (id) => window.location.href = `editor.html?id=${id}`;
         
-        window.handleDeleteNote = (id) => {
-            if (confirm('Apakah Anda yakin ingin menghapus notulen ini? Tindakan ini tidak dapat dibatalkan.')) {
-                deleteNote(id);
-                showToast('Notulen berhasil dihapus', 'success');
-                updateStats();
-                renderNotes();
+        // Fungsi Hapus (Terhubung ke delete_note.php)
+        window.handleDeleteNote = async (id) => {
+            if (confirm('Apakah Anda yakin ingin menghapus notulen ini? Permanen.')) {
+                try {
+                    const res = await fetch('delete_note.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: id })
+                    });
+                    const result = await res.json();
+                    
+                    if(result.status === 'success') {
+                        showToast('Notulen berhasil dihapus', 'success');
+                        loadNotesFromDB(); // Refresh data tanpa reload
+                    } else {
+                        showToast('Gagal menghapus: ' + result.message, 'error');
+                    }
+                } catch (err) {
+                    showToast('Error koneksi database', 'error');
+                }
             }
         };
 
-        // ============================================
-        // EVENT LISTENERS
-        // ============================================
-        
-        // Search input
+        // Event Listeners UI
         document.getElementById('searchInput').addEventListener('input', (e) => {
             searchQuery = e.target.value.trim();
             renderNotes();
         });
         
-        // Sort dropdown
         document.getElementById('sortSelect').addEventListener('change', (e) => {
             currentSort = e.target.value;
             renderNotes();
         });
         
-        // New note buttons
-        document.getElementById('newNoteBtn').addEventListener('click', () => {
-            window.location.href = 'editor.html';
-        });
+        document.getElementById('newNoteBtn').addEventListener('click', () => window.location.href = 'editor.html');
+        document.getElementById('createFirstNoteBtn').addEventListener('click', () => window.location.href = 'editor.html');
         
-        document.getElementById('createFirstNoteBtn').addEventListener('click', () => {
-            window.location.href = 'editor.html';
-        });
-        
-        // Logout
         document.getElementById('logoutBtn').addEventListener('click', () => {
-            if (confirm('Anda yakin ingin keluar?')) {
-                logout();
-            }
+            if (confirm('Anda yakin ingin keluar?')) logout();
         });
-        
-        // User menu toggle
+
+        // User menu dropdown
         document.getElementById('userMenuBtn').addEventListener('click', (e) => {
             e.stopPropagation();
             document.querySelector('.user-menu').classList.toggle('open');
         });
-        
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.user-menu')) {
-                document.querySelectorAll('.user-menu.open').forEach(menu => {
-                    menu.classList.remove('open');
-                });
-            }
-        });
+        document.addEventListener('click', () => document.querySelector('.user-menu').classList.remove('open'));
 
-        // ============================================
-        // INITIALIZE
-        // ============================================
-        updateStats();
-        renderNotes();
-        
-        console.log('[MANAGE] Initialized successfully');
     </script>
 </body>
 </html>

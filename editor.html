@@ -8,7 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Header -->
     <header class="site-header">
         <div class="container header-inner">
             <a href="dashboard.html" class="logo" style="color: var(--primary);">
@@ -16,172 +15,190 @@
                 <span>SIPNOTUL</span>
             </a>
             <div class="header-controls">
-                <span id="saveStatus" style="font-size: 0.875rem; color: var(--text-muted);">Tersimpan</span>
+                <span id="saveStatus" style="font-size: 0.875rem; color: var(--text-muted);">Belum disimpan</span>
                 <button class="btn btn-secondary btn-sm" id="shareBtn">🔗 Bagikan</button>
-                <button class="btn btn-primary btn-sm" id="saveBtn">💾 Simpan</button>
+                <button type="button" class="btn btn-primary btn-sm" id="saveBtn">💾 Simpan</button>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
         <div class="card" style="max-width: 900px; margin: 0 auto;">
             <h2 id="editorTitle" style="margin-bottom: 2rem;">Notulen Baru</h2>
             
             <form id="noteForm">
-                <!-- Meeting Info -->
+                <input type="hidden" id="idNotes" name="idNotes">
+
                 <div style="margin-bottom: 2rem;">
                     <h3 style="margin-bottom: 1rem;">Informasi Rapat</h3>
                     <div class="form-group">
                         <label class="form-label" for="title">Judul Rapat *</label>
-                        <input type="text" class="form-input" id="title" required>
+                        <input type="text" class="form-input" id="title" name="title" required>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label" for="date">Tanggal *</label>
-                            <input type="date" class="form-input" id="date" required>
+                            <input type="date" class="form-input" id="date" name="meetingDate" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="time">Waktu</label>
-                            <input type="time" class="form-input" id="time">
+                            <input type="time" class="form-input" id="time" name="time">
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="location">Tempat</label>
-                        <input type="text" class="form-input" id="location">
+                        <input type="text" class="form-input" id="location" name="location">
                     </div>
                 </div>
 
-                <!-- Attendees -->
-                <div style="margin-bottom: 2rem;">
-                    <h3 style="margin-bottom: 1rem;">Peserta</h3>
-                    <div class="form-group">
-                        <label class="form-label" for="attendees">Daftar Hadir (satu nama per baris)</label>
-                        <textarea class="form-input" id="attendees" rows="3" style="resize: vertical;"></textarea>
-                    </div>
-                </div>
-
-                <!-- Content -->
                 <div style="margin-bottom: 2rem;">
                     <h3 style="margin-bottom: 1rem;">Konten Notulen</h3>
                     <div class="form-group">
-                        <label class="form-label" for="agenda">Agenda</label>
-                        <textarea class="form-input" id="agenda" rows="3" style="resize: vertical;"></textarea>
-                    </div>
-                    <div class="form-group">
                         <label class="form-label" for="discussion">Hasil Pembahasan *</label>
-                        <textarea class="form-input" id="discussion" rows="8" required style="resize: vertical;"></textarea>
+                        <textarea class="form-input" id="discussion" name="content" rows="8" required style="resize: vertical;"></textarea>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="decisions">Keputusan</label>
-                        <textarea class="form-input" id="decisions" rows="3" style="resize: vertical;"></textarea>
+                        <textarea class="form-input" id="decisions" name="decisions" rows="3" style="resize: vertical;"></textarea>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="tasks">Tindak Lanjut</label>
-                        <textarea class="form-input" id="tasks" rows="3" style="resize: vertical;"></textarea>
+                        <textarea class="form-input" id="tasks" name="followUp" rows="3" style="resize: vertical;"></textarea>
                     </div>
                 </div>
 
-                <!-- Settings -->
                 <div style="margin-bottom: 2rem;">
                     <h3 style="margin-bottom: 1rem;">Pengaturan</h3>
                     <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                        <input type="checkbox" id="isPublic">
+                        <input type="checkbox" id="isPublic" name="isPublic" value="1">
                         <span>Dapat diakses publik dengan kode/tautan</span>
                     </label>
-                </div>
-
-                <div style="display: flex; gap: 1rem;">
-                    <button type="submit" class="btn btn-primary">💾 Simpan Notulen</button>
-                    <a href="dashboard.html" class="btn btn-secondary">❌ Batal</a>
                 </div>
             </form>
         </div>
     </main>
 
-    <!-- Toast container -->
     <div id="toasts" class="toasts"></div>
 
-    <!-- JavaScript -->
     <script type="module">
         import { requireAuth, getCurrentUser, showToast } from './src/auth.js';
-        import { saveNote, getNoteById } from './src/storage.js';
-
-        // Check auth
+        
+        // Cek Login (Auth.js tetap dipakai untuk cek sesi browser)
         if (!requireAuth()) {
-            // Will redirect, no need to continue
+            // Redirect terjadi otomatis
         }
 
         const user = getCurrentUser();
-        let currentNote = null;
+        console.log("Logged in user:", user);
 
-        // Check if editing existing note
+        // ==========================================
+        // 1. LOGIKA EDIT (LOAD DATA DARI DATABASE)
+        // ==========================================
         const params = new URLSearchParams(window.location.search);
         const noteId = params.get('id');
 
         if (noteId) {
-            currentNote = getNoteById(noteId);
-            if (currentNote) {
-                document.getElementById('editorTitle').textContent = 'Edit Notulen';
-                populateForm(currentNote);
-            }
+            document.getElementById('editorTitle').textContent = 'Edit Notulen';
+            document.getElementById('idNotes').value = noteId;
+            loadNoteData(noteId);
         }
 
-        // Populate form with note data
-        function populateForm(note) {
-            document.getElementById('title').value = note.title || '';
-            document.getElementById('date').value = note.meetingDate || '';
-            document.getElementById('time').value = note.time || '';
-            document.getElementById('location').value = note.location || '';
-            document.getElementById('attendees').value = (note.attendees || []).join('\n');
-            document.getElementById('agenda').value = note.agenda || '';
-            document.getElementById('discussion').value = note.content || '';
-            document.getElementById('decisions').value = note.decisions || '';
-            document.getElementById('tasks').value = note.followUp || '';
-            document.getElementById('isPublic').checked = note.isPublic || false;
-        }
-
-        // Handle form submission
-        document.getElementById('noteForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const noteData = {
-                id: currentNote?.id,
-                title: document.getElementById('title').value,
-                meetingDate: document.getElementById('date').value,
-                time: document.getElementById('time').value,
-                location: document.getElementById('location').value,
-                attendees: document.getElementById('attendees').value.split('\n').filter(Boolean),
-                agenda: document.getElementById('agenda').value,
-                content: document.getElementById('discussion').value,
-                decisions: document.getElementById('decisions').value,
-                followUp: document.getElementById('tasks').value,
-                isPublic: document.getElementById('isPublic').checked,
-                authorId: user.id
-            };
-            
+        async function loadNoteData(id) {
             try {
-                const saved = saveNote(noteData);
-                showToast('Notulen berhasil disimpan!', 'success');
-                setTimeout(() => window.location.href = 'dashboard.html', 1000);
+                // Fetch data dari PHP
+                const response = await fetch(`get_note_detail.php?id=${id}`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    const note = data.data;
+                    // Isi form dengan data dari database
+                    document.getElementById('title').value = note.title;
+                    document.getElementById('date').value = note.meetingDate;
+                    document.getElementById('time').value = note.time;
+                    document.getElementById('location').value = note.location;
+                    document.getElementById('discussion').value = note.content;
+                    document.getElementById('decisions').value = note.decisions;
+                    document.getElementById('tasks').value = note.followUp;
+                    document.getElementById('isPublic').checked = (note.isPublic == 1);
+                } else {
+                    showToast('Gagal memuat data notulen: ' + data.message, 'error');
+                }
             } catch (error) {
-                showToast(error.message, 'error');
+                console.error('Error:', error);
+                showToast('Terjadi kesalahan koneksi', 'error');
+            }
+        }
+
+        // ==========================================
+        // 2. LOGIKA SIMPAN (KIRIM KE DATABASE)
+        // ==========================================
+        document.getElementById('saveBtn').addEventListener('click', async () => {
+            const saveBtn = document.getElementById('saveBtn');
+            const statusSpan = document.getElementById('saveStatus');
+            
+            // Validasi Sederhana
+            const title = document.getElementById('title').value;
+            if (!title) {
+                showToast('Judul rapat wajib diisi!', 'error');
+                return;
+            }
+
+            // Siapkan Data Form
+            const form = document.getElementById('noteForm');
+            const formData = new FormData(form);
+
+            // Tambahkan data User yang sedang login (Author)
+            formData.append('authorNim', user.nim || user.id); // Sesuaikan dengan properti di auth.js kamu
+
+            // Ubah tampilan tombol jadi loading
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Menyimpan...';
+            statusSpan.textContent = 'Menyimpan...';
+
+            try {
+                // KIRIM KE FILE PHP BARU KITA
+                const response = await fetch('save_note.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    showToast('Berhasil disimpan ke Database!', 'success');
+                    statusSpan.textContent = 'Tersimpan';
+                    
+                    // Jika ini notulen baru, redirect ke dashboard atau update URL
+                    if (!noteId) {
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html'; // atau reload ke mode edit
+                        }, 1500);
+                    }
+                } else {
+                    throw new Error(result.message);
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Gagal menyimpan: ' + error.message, 'error');
+                statusSpan.textContent = 'Gagal menyimpan';
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '💾 Simpan';
             }
         });
 
-        // Save button
-        document.getElementById('saveBtn').addEventListener('click', () => {
-            document.getElementById('noteForm').requestSubmit();
-        });
-
-        // Share button
+        // ==========================================
+        // 3. FITUR SHARE
+        // ==========================================
         document.getElementById('shareBtn').addEventListener('click', () => {
-            if (currentNote?.id) {
-                const url = `${location.origin}/viewer.html?code=${currentNote.id}`;
+            const currentId = document.getElementById('idNotes').value;
+            if (currentId) {
+                const url = `${location.origin}/viewer.html?code=${currentId}`;
                 navigator.clipboard.writeText(url);
-                showToast('Link disalin ke clipboard!', 'success');
+                showToast('Link tersalin!', 'success');
             } else {
-                showToast('Simpan notulen terlebih dahulu', 'info');
+                showToast('Simpan notulen dulu sebelum membagikan', 'info');
             }
         });
     </script>

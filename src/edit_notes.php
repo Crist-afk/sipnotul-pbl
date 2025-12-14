@@ -1,20 +1,27 @@
 <?php
-// include database connection file
 include 'conn_db_notes.php';
-    $idNotes = $_POST['idNotes'];
-    $title = $_POST['title'];
-    $content = $_POST['content'];
-    $meetingDate = $_POST['meetingDate'];
-    $time = $_POST['time'];
-    $location = $_POST['location'];
-    $decisions = $_POST['decisions'];
-    $followUp = $_POST['followUp'];
-    $followUpCompleted = $_POST['followUpCompleted'];
-    $createdAt = $_POST['createdAt'];
-    $authorId = $_POST['authorId'];
-    $isPublic = $_POST['isPublic'];
-    $result = mysqli_query($conn_db_notes, "UPDATE mahasiswa SET nama= '$nama', jurusan= '$jurusan',
-        angkatan= '$angkatan' WHERE nim= '$nim'");
-    // Redirect to homepage to display updated user in list
-    header("Location: mahasiswa.php");
+
+// Ambil data dari form
+$idNotes = $_POST['idNotes'];
+$title = $_POST['title'];
+$content = $_POST['content'];
+// ... (ambil variabel lain) ...
+
+// PERBAIKAN: Gunakan nama tabel yang sesuai gambar (tbnotesdata)
+// Pastikan nama kolom (title, content, dll) sama persis dengan di database
+$query = "UPDATE tbnotesdata SET 
+          title = '$title', 
+          content = '$content',
+          meetingDate = '$meetingDate',
+          time = '$time',
+          location = '$location'
+          WHERE idNotes = '$idNotes'";
+
+$result = mysqli_query($conn_db_notes, $query);
+
+if($result) {
+    header("Location: manage.html"); // Kembalikan ke halaman manage
+} else {
+    echo "Error: " . mysqli_error($conn_db_notes);
+}
 ?>
