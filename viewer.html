@@ -74,9 +74,7 @@
             // --- LOGIKA MENAMPILKAN PESERTA ---
             let attendeesHtml = '';
             
-            // Cek apakah ada data attendeesList dari database
             if (note.attendeesList && note.attendeesList.length > 0) {
-                // Loop data peserta dan buat HTML list
                 const listItems = note.attendeesList.map(person => `
                     <li style="
                         display: inline-block; 
@@ -101,7 +99,6 @@
                     </div>
                 `;
             } else {
-                // Jika tidak ada data di database (fallback ke text manual jika ada)
                 attendeesHtml = '<div style="margin-bottom: 2rem;"><p class="text-muted">Tidak ada data peserta.</p></div>';
             }
             // ----------------------------------
@@ -109,10 +106,14 @@
             container.innerHTML = `
                 <div style="border-bottom: 2px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
                     <h1 style="margin-bottom: 1rem;">${escapeHtml(note.title)}</h1>
+                    
                     <div style="display: flex; gap: 2rem; flex-wrap: wrap; color: var(--text-muted); font-size: 0.875rem;">
                         ${note.meetingDate ? `<div>📅 ${formatDate(note.meetingDate)}</div>` : ''}
                         ${note.time ? `<div>🕐 ${note.time}</div>` : ''}
                         ${note.location ? `<div>📍 ${escapeHtml(note.location)}</div>` : ''}
+                        
+                        ${note.accessCode ? `<div>🔑 Kode: <strong style="color: #000;">${note.accessCode}</strong></div>` : ''}
+                        
                         <div style="font-weight:600; color:var(--primary)">
                              ${note.isPublic == 1 ? '🌐 Publik' : '🔒 Privat'}
                         </div>

@@ -45,11 +45,20 @@
                             <input type="time" class="form-input" id="time" name="time">
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" for="location">Tempat</label>
-                        <input type="text" class="form-input" id="location" name="location">
+                    
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 2;"> 
+                            <label class="form-label" for="location">Tempat</label>
+                            <input type="text" class="form-input" id="location" name="location">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label class="form-label">Kode Akses (4 Digit)</label>
+                            <input type="text" class="form-input" id="accessCodeDisplay" readonly 
+                                   style="background-color: #f3f4f6; font-weight: bold; text-align: center; letter-spacing: 3px;"
+                                   placeholder="----">
+                        </div>
                     </div>
-                </div>
+                    </div>
 
                 <div style="margin-bottom: 2rem;">
                     <h3 style="margin-bottom: 1rem;">Peserta Rapat</h3>
@@ -188,9 +197,9 @@
             loadNoteData(noteId);
         }
 
+        // PERUBAHAN DI SINI: MENAMPILKAN KODE AKSES PRNG
         async function loadNoteData(id) {
             try {
-                // Fetch data dari PHP
                 const response = await fetch(`get_note_detail.php?id=${id}`);
                 const data = await response.json();
 
@@ -201,6 +210,11 @@
                     document.getElementById('date').value = note.meetingDate;
                     document.getElementById('time').value = note.time;
                     document.getElementById('location').value = note.location;
+                    
+                    // --- TAMPILKAN KODE AKSES PRNG ---
+                    document.getElementById('accessCodeDisplay').value = note.accessCode || '-';
+                    // ---------------------------------
+
                     document.getElementById('discussion').value = note.content;
                     document.getElementById('decisions').value = note.decisions;
                     document.getElementById('tasks').value = note.followUp;
@@ -262,11 +276,22 @@
                     showToast('Berhasil disimpan ke Database!', 'success');
                     statusSpan.textContent = 'Tersimpan';
                     
+                    // Update tampilan Kode Akses jika baru dibuat
+                    if (result.accessCode) {
+                        document.getElementById('accessCodeDisplay').value = result.accessCode;
+                    }
+
                     // Jika ini notulen baru, redirect ke dashboard atau update URL
                     if (!noteId) {
+                        // Opsi 1: Redirect ke Dashboard
                         setTimeout(() => {
                             window.location.href = 'dashboard.html';
                         }, 1500);
+                        
+                        // Opsi 2 (Alternatif): Tetap di editor tapi ubah URL jadi mode edit
+                        // const newUrl = `${window.location.pathname}?id=${result.id}`;
+                        // window.history.replaceState({ path: newUrl }, '', newUrl);
+                        // document.getElementById('idNotes').value = result.id;
                     }
                 } else {
                     throw new Error(result.message);

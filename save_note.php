@@ -26,14 +26,21 @@ mysqli_begin_transaction($conn_db_notes);
 try {
     // 1. SIMPAN DATA NOTULEN
     if (empty($idNotes)) {
+        // --- MODE BARU (INSERT) ---
         $newId = 'NOT' . strtoupper(uniqid()); 
         $idNotes = $newId;
 
+        // === FITUR PRNG 4 DIGIT ===
+        // Menghasilkan angka acak 0000 sampai 9999
+        $accessCode = str_pad(mt_rand(0, 9999), 4, '0', STR_PAD_LEFT); 
+
         $queryNote = "INSERT INTO tbnotesdata 
-                  (idNotes, title, content, meetingDate, time, location, decisions, followUp, authorNim, isPublic, createdAt) 
+                  (idNotes, title, content, meetingDate, time, location, decisions, followUp, authorNim, isPublic, accessCode, createdAt) 
                   VALUES 
-                  ('$newId', '$title', '$content', '$meetingDate', '$time', '$location', '$decisions', '$followUp', '$authorNim', '$isPublic', NOW())";
+                  ('$newId', '$title', '$content', '$meetingDate', '$time', '$location', '$decisions', '$followUp', '$authorNim', '$isPublic', '$accessCode', NOW())";
     } else {
+        // --- MODE EDIT (UPDATE) ---
+        // Kita TIDAK mengupdate accessCode agar kodenya tetap sama selamanya
         $queryNote = "UPDATE tbnotesdata SET 
                   title = '$title', content = '$content', meetingDate = '$meetingDate', 
                   time = '$time', location = '$location', decisions = '$decisions', 
@@ -45,8 +52,7 @@ try {
         throw new Exception("Gagal menyimpan notulen: " . mysqli_error($conn_db_notes));
     }
 
-    // 2. SIMPAN DATA PESERTA
-    // Hapus peserta lama dulu (Reset)
+    // 2. SIMPAN DATA PESERTA (Sama seperti sebelumnya)
     $deleteAttendees = "DELETE FROM tbnotesattendees WHERE idNotes = '$idNotes'";
     mysqli_query($conn_db_notes, $deleteAttendees);
 
@@ -55,28 +61,18 @@ try {
             $inputNim  = mysqli_real_escape_string($conn_db_notes, $person['nim']);
             $inputName = mysqli_real_escape_string($conn_db_notes, $person['name']);
             
-            // ========================================================
-            // [LOGIKA BARU] PENCARIAN NIM OTOMATIS (AUTO-LINK)
-            // ========================================================
+            // Logika Auto-Link NIM
             $finalNim = $inputNim;
-
-            // Jika NIM yang dikirim kosong atau tanda strip ('-')
             if ($inputNim == '-' || empty($inputNim)) {
-                // Cek ke database user (dbusers.tbusers) berdasarkan Nama
                 $queryCheckUser = "SELECT nim FROM dbusers.tbusers WHERE name LIKE '$inputName' LIMIT 1";
                 $resultUser = mysqli_query($conn_db_notes, $queryCheckUser);
-                
-                // Jika ketemu, update $finalNim dengan NIM asli dari database
                 if ($resultUser && mysqli_num_rows($resultUser) > 0) {
                     $userData = mysqli_fetch_assoc($resultUser);
                     $finalNim = $userData['nim'];
                 }
             }
-            // ========================================================
 
-            // Insert ke database menggunakan $finalNim (NIM Asli atau tetap strip)
             $insertAttendee = "INSERT INTO tbnotesattendees (idNotes, nim, name) VALUES ('$idNotes', '$finalNim', '$inputName')";
-            
             if (!mysqli_query($conn_db_notes, $insertAttendee)) {
                 throw new Exception("Gagal menyimpan peserta: " . mysqli_error($conn_db_notes));
             }
@@ -84,7 +80,15 @@ try {
     }
 
     mysqli_commit($conn_db_notes);
-    echo json_encode(['status' => 'success', 'message' => 'Berhasil disimpan', 'id' => $idNotes]);
+    
+    // Kembalikan juga accessCode ke frontend agar bisa langsung ditampilkan
+    // Jika mode edit, kita harus fetch accessCode lama (opsional), tapi message sukses sudah cukup
+    echo json_encode([
+        'status' => 'success', 
+        'message' => 'Berhasil disimpan', 
+        'id' => $idNotes,
+        'accessCode' => isset($accessCode) ? $accessCode : null
+    ]);
 
 } catch (Exception $e) {
     mysqli_rollback($conn_db_notes);

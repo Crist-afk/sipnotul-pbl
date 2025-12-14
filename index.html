@@ -351,14 +351,44 @@
             }
         });
 
+// ============================================
+        // NOTE SEARCH HANDLER (DENGAN FITUR 4 DIGIT)
         // ============================================
-        // NOTE SEARCH HANDLER
-        // ============================================
-        document.getElementById('searchForm').addEventListener('submit', (e) => {
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const code = document.getElementById('noteCode').value.trim();
-            if (code) {
-                window.location.href = `viewer.html?code=${encodeURIComponent(code)}`;
+            
+            // Ambil input dari kotak pencarian
+            const inputCode = document.getElementById('noteCode').value.trim();
+            const searchBtn = e.target.querySelector('button'); // Tombol cari
+            
+            if (!inputCode) return;
+
+            // Efek Loading (Ubah teks tombol)
+            const originalText = searchBtn.textContent;
+            searchBtn.textContent = '⏳ Mencari...';
+            searchBtn.disabled = true;
+
+            try {
+                // 1. Tanya ke Server: "Kode ini punya siapa?"
+                const response = await fetch(`search_note_by_code.php?code=${encodeURIComponent(inputCode)}`);
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    // 2. Jika Ketemu: Pindah ke Viewer menggunakan ID ASLI
+                    // Contoh: User ketik '1234' -> Server jawab ID 'NOT-ABC' -> Pindah ke viewer.html?code=NOT-ABC
+                    window.location.href = `viewer.html?code=${result.idNotes}`;
+                } else {
+                    // 3. Jika Tidak Ketemu
+                    alert(result.message); // Tampilkan pesan error
+                }
+
+            } catch (err) {
+                console.error('Search Error:', err);
+                alert('Terjadi kesalahan koneksi ke server.');
+            } finally {
+                // Kembalikan tombol seperti semula
+                searchBtn.textContent = originalText;
+                searchBtn.disabled = false;
             }
         });
     </script>
