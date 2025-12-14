@@ -51,7 +51,7 @@
         async function loadNoteFromDB(id) {
             try {
                 // Panggil PHP
-                const response = await fetch(`get_note_detail.php?id=${id}`);
+                const response = await fetch(`php/get_note_detail.php?id=${id}`);
                 const result = await response.json();
 
                 if (result.status === 'success') {

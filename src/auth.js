@@ -21,7 +21,7 @@ export async function login(nim, password, remember = false) {
 
     try {
         // 1. Kirim data ke PHP
-        const response = await fetch('login.php', {
+        const response = await fetch('php/login.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -62,7 +62,7 @@ export async function register(userData) {
     console.log('[AUTH] Registering user:', userData.nim);
 
     try {
-        const response = await fetch('register_user.php', {
+        const response = await fetch('php/register_user.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

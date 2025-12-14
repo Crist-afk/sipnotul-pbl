@@ -129,7 +129,7 @@
         async function loadNotesFromDB() {
             try {
                 // Panggil file PHP
-                const response = await fetch(`get_user_notes.php?nim=${user.nim || user.id}`);
+                const response = await fetch(`php/get_user_notes.php?nim=${user.nim || user.id}`);
                 const data = await response.json();
                 
                 // Simpan ke variabel global
@@ -260,7 +260,7 @@
         window.handleDeleteNote = async (id) => {
             if (confirm('Apakah Anda yakin ingin menghapus notulen ini? Permanen.')) {
                 try {
-                    const res = await fetch('delete_note.php', {
+                    const res = await fetch('php/delete_note.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ id: id })

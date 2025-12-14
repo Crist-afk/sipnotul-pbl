@@ -198,9 +198,10 @@
         }
 
         // PERUBAHAN DI SINI: MENAMPILKAN KODE AKSES PRNG
-        async function loadNoteData(id) {
+async function loadNoteData(id) {
             try {
-                const response = await fetch(`get_note_detail.php?id=${id}`);
+                // PERBAIKAN: Gunakan Backtick (`) bukan petik satu (')
+                const response = await fetch(`php/get_note_detail.php?id=${id}`); 
                 const data = await response.json();
 
                 if (data.status === 'success') {
@@ -265,7 +266,7 @@
 
             try {
                 // KIRIM KE FILE PHP
-                const response = await fetch('save_note.php', {
+                const response = await fetch('php/save_note.php', {
                     method: 'POST',
                     body: formData
                 });

@@ -370,7 +370,7 @@
 
             try {
                 // 1. Tanya ke Server: "Kode ini punya siapa?"
-                const response = await fetch(`search_note_by_code.php?code=${encodeURIComponent(inputCode)}`);
+                const response = await fetch(`php/search_note_by_code.php?code=${encodeURIComponent(inputCode)}`);
                 const result = await response.json();
 
                 if (result.status === 'success') {
