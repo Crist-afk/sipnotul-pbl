@@ -11,63 +11,65 @@ const AUTH_KEY = 'sipenotul_auth';
 
 /**
  * Login function (Connects to Database)
- * @param {string} nim - Student ID number
- * @param {string} password - User password
- * @param {boolean} remember - Whether to remember the user
- * @returns {object} User session object
+ * PERBAIKAN: Menggunakan URLSearchParams agar terbaca $_POST di PHP
  */
 export async function login(nim, password, remember = false) {
     console.log('[AUTH] Attempting login for:', nim);
 
     try {
-        // 1. Kirim data ke PHP
+        // PERBAIKAN: Gunakan format Form Data, bukan JSON
+        const formData = new URLSearchParams();
+        formData.append('nim', nim);
+        formData.append('password', password);
+
         const response = await fetch('php/login.php', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/x-www-form-urlencoded'
             },
-            body: JSON.stringify({ nim, password })
+            body: formData // Kirim sebagai Form Data
         });
 
-        // 2. Baca balasan dari PHP
         const result = await response.json();
 
-        // 3. Cek status
         if (result.status === 'success') {
             console.log('[AUTH] Login successful:', result.user.name);
 
-            // Simpan data user ke browser (Session/Local Storage)
             const storage = remember ? localStorage : sessionStorage;
             storage.setItem(AUTH_KEY, JSON.stringify(result.user));
 
             return result.user;
         } else {
-            // Jika password salah atau user tidak ditemukan
             console.error('[AUTH] Login failed:', result.message);
             throw new Error(result.message);
         }
 
     } catch (error) {
         console.error('[AUTH] System Error:', error);
-        throw error; // Lempar error agar bisa ditangkap index.html
+        throw error;
     }
 }
 
 /**
  * Register new user (Connects to Database)
- * @param {object} userData - User registration data
- * @returns {object} User session object
+ * PERBAIKAN: Menggunakan URLSearchParams agar terbaca $_POST di PHP
  */
 export async function register(userData) {
     console.log('[AUTH] Registering user:', userData.nim);
 
     try {
+        // PERBAIKAN: Konversi Object ke Form Data
+        const formData = new URLSearchParams();
+        for (const key in userData) {
+            formData.append(key, userData[key]);
+        }
+
         const response = await fetch('php/register_user.php', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/x-www-form-urlencoded'
             },
-            body: JSON.stringify(userData)
+            body: formData // Kirim sebagai Form Data
         });
 
         const result = await response.json();
@@ -75,10 +77,12 @@ export async function register(userData) {
         if (result.status === 'success') {
             console.log('[AUTH] Registration successful');
             
-            // Auto-login setelah daftar (Simpan ke LocalStorage)
-            localStorage.setItem(AUTH_KEY, JSON.stringify(result.user));
+            // Auto-login setelah daftar
+            if (result.user) {
+                localStorage.setItem(AUTH_KEY, JSON.stringify(result.user));
+            }
             
-            return result.user;
+            return result.user || result;
         } else {
             throw new Error(result.message);
         }
@@ -90,11 +94,9 @@ export async function register(userData) {
 
 /**
  * Get current logged-in user
- * @returns {object|null} User session or null
  */
 export function getCurrentUser() {
     try {
-        // Cek LocalStorage (jika "Ingat Saya") atau SessionStorage (jika tidak)
         const data = localStorage.getItem(AUTH_KEY) || sessionStorage.getItem(AUTH_KEY);
         return data ? JSON.parse(data) : null;
     } catch (e) {
@@ -105,7 +107,6 @@ export function getCurrentUser() {
 
 /**
  * Check if user is logged in
- * @returns {boolean} True if logged in
  */
 export function isLoggedIn() {
     return getCurrentUser() !== null;
@@ -113,7 +114,6 @@ export function isLoggedIn() {
 
 /**
  * Logout current user
- * Clears session and redirects to home
  */
 export function logout() {
     console.log('[AUTH] Logging out');
@@ -124,8 +124,6 @@ export function logout() {
 
 /**
  * Require authentication (for protected pages)
- * Redirects to home if not logged in
- * @returns {boolean} True if authenticated
  */
 export function requireAuth() {
     if (!isLoggedIn()) {
@@ -138,8 +136,6 @@ export function requireAuth() {
 
 /**
  * Show toast notification
- * @param {string} message - Message to display
- * @param {string} type - Type: 'success', 'error', 'info'
  */
 export function showToast(message, type = 'info') {
     const container = document.getElementById('toasts');
@@ -148,12 +144,35 @@ export function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.textContent = message;
+    
+    // Style manual untuk memastikan toast terlihat jika CSS belum load
+    toast.style.padding = '12px 20px';
+    toast.style.marginTop = '10px';
+    toast.style.borderRadius = '5px';
+    toast.style.color = '#fff';
+    toast.style.fontFamily = "'Orbitron', sans-serif";
+    toast.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
+    toast.style.transition = 'opacity 0.3s ease';
     toast.style.opacity = '0';
+
+    if(type === 'success') {
+        toast.style.background = '#001a33';
+        toast.style.border = '1px solid #00f3ff';
+        toast.style.boxShadow = '0 0 10px #00f3ff';
+    } else if (type === 'error') {
+        toast.style.background = '#001a33';
+        toast.style.border = '1px solid #ff0055';
+        toast.style.boxShadow = '0 0 10px #ff0055';
+    } else {
+        toast.style.background = '#333';
+    }
     
     container.appendChild(toast);
     
     // Animasi Fade In
-    setTimeout(() => toast.style.opacity = '1', 10);
+    requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+    });
     
     // Animasi Fade Out
     setTimeout(() => {
@@ -162,5 +181,4 @@ export function showToast(message, type = 'info') {
     }, 3000);
 }
 
-// Export default object for compatibility
-export default { login, logout, getCurrentUser, isLoggedIn, requireAuth, register, showToast };
+export default { login, logout, getCurrentUser, isLoggedIn, requireAuth, register, showToast };     
