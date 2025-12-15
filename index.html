@@ -38,7 +38,7 @@
         <div class="container">
             <div class="hero-content">
                 <h1>Sistem Pencatatan Notulen Digital</h1>
-                <p class="hero-subtitle">Buat, kelola, dan bagikan notulen rapat dengan mudah dan efisien.</p>
+                <p class="hero-subtitle">Buat, kelola, dan bagikan notulen rapat dengan mudah dan responsif.</p>
 
                 <!-- Quick search box -->
                 <div class="search-box">
@@ -65,7 +65,7 @@
                     </div>
                     <div class="feature-card card">
                         <span class="icon">🔒</span>
-                        <h3>Kontrol Akses</h3>
+                        <h3>Kelola Akses</h3>
                         <p>Atur siapa saja yang dapat melihat dan mengubah notulen</p>
                     </div>
                 </div>
@@ -85,7 +85,7 @@
             <button class="modal-close" onclick="closeLoginModal()">&times;</button>
             <div class="modal-header">
                 <h2>Masuk ke Akun</h2>
-                <p>Masukkan NIM dan password Anda</p>
+                <p>Masukkan NIM dan kata sandi Anda</p>
             </div>
             <div class="modal-body">
                 <form id="loginForm">
@@ -94,9 +94,9 @@
                         <input type="text" class="form-input" id="loginNim" placeholder="Contoh: 01 atau 3312501041" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="loginPassword">Password</label>
+                        <label class="form-label" for="loginPassword">Kata Sandi</label>
                         <div class="password-wrapper">
-                            <input type="password" class="form-input" id="loginPassword" placeholder="Masukkan password" required>
+                            <input type="password" class="form-input" id="loginPassword" placeholder="Masukkan kata sandi" required>
                             <button type="button" class="password-toggle" onclick="togglePassword('loginPassword', this)">👁️</button>
                         </div>
                     </div>
@@ -158,11 +158,11 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label" for="regPassword">Password</label>
+                            <label class="form-label" for="regPassword">Kata Sandi</label>
                             <input type="password" class="form-input" id="regPassword" placeholder="Min. 8 karakter" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="regConfirmPassword">Konfirmasi Password</label>
+                            <label class="form-label" for="regConfirmPassword">Konfirmasi Kata Sandi</label>
                             <input type="password" class="form-input" id="regConfirmPassword" required>
                         </div>
                     </div>
