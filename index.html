@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIPNOTUL - Sistem Pencatatan Notulen</title>
     <link rel="stylesheet" href="src/styles.css?v=2">
-    <!-- CSS untuk komponen terpisah -->
     <link rel="stylesheet" href="src/logo-loop.css?v=1">
     <link rel="stylesheet" href="src/animated-scroll.css?v=1">
     <link rel="stylesheet" href="src/social-nav.css?v=1">
@@ -15,35 +14,112 @@
     
     <style>
         /* Team Card Alignment Fix - Minimal inline CSS */
-        .team-card .member-info {
-            margin-top: auto !important;
-        }
+        .team-card .member-info { margin-top: auto !important; }
+        .team-card .member-name { margin-bottom: 0.5rem !important; }
+        .team-card .member-role { margin: 0 !important; line-height: 1.6 !important; }
+        .social-media-bottom { padding: 3rem 0; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-top: 1px solid rgba(0, 0, 0, 0.05); }
+
+        /* ========================================= */
+        /* TAMBAHAN CSS RESPONSIF (MEDIA QUERIES)    */
+        /* ========================================= */
         
-        .team-card .member-name {
-            margin-bottom: 0.5rem !important;
-        }
-        
-        .team-card .member-role {
-            margin: 0 !important;
-            line-height: 1.6 !important;
+        /* Tombol Hamburger (Default Sembunyi di Desktop) */
+        .hamburger-menu {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #333; /* Sesuaikan dengan warna teks navbar */
         }
 
-        /* Social Media Section at Bottom */
-        .social-media-bottom {
-            padding: 3rem 0;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        /* Aturan untuk Tablet & Mobile (Layar < 768px) */
+        @media screen and (max-width: 768px) {
+            
+            /* 1. Navbar Responsif */
+            .navbar .container {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1rem;
+            }
+
+            .hamburger-menu {
+                display: block; /* Munculkan tombol di HP */
+            }
+
+            .nav-links {
+                display: none; /* Sembunyikan menu secara default */
+                width: 100%;
+                flex-direction: column;
+                gap: 1rem;
+                margin-top: 1rem;
+                text-align: center;
+                background-color: white; /* Pastikan background terlihat */
+                padding-bottom: 1rem;
+            }
+
+            /* Class ini akan di-toggle via JS */
+            .nav-links.active {
+                display: flex;
+            }
+
+            /* 2. Hero Section */
+            .hero-content h1 {
+                font-size: 2rem; /* Kecilkan font judul */
+            }
+            
+            .features {
+                display: flex;
+                flex-direction: column; /* Fitur berjejer ke bawah */
+                gap: 1.5rem;
+            }
+            
+            .feature-card {
+                width: 100%; /* Lebar penuh */
+                margin: 0;
+            }
+
+            /* 3. Team Section */
+            .team-container {
+                display: flex;
+                flex-direction: column; /* Kartu tim ke bawah */
+                align-items: center;
+            }
+            
+            .team-card {
+                width: 100%;
+                max-width: 350px; /* Batasi lebar agar tidak terlalu gepeng */
+                margin-bottom: 2rem;
+            }
+
+            /* 4. Modal (Login/Register) */
+            .modal-content {
+                width: 90%; /* Jangan 100% atau fixed px */
+                margin: 10% auto;
+                padding: 1.5rem;
+            }
+            
+            .form-row {
+                flex-direction: column; /* Input Nama Depan/Belakang ke bawah */
+                gap: 1rem;
+            }
         }
     </style>
 </head>
 <body class="landing-page">
-    <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="container">
             <a href="/" class="logo">
                 <img src="./assets/logo.png" alt="SIPNOTUL Logo">
                 <span>SIPNOTUL</span>
             </a>
+            
+            <button class="hamburger-menu" id="hamburgerBtn" aria-label="Menu">
+                ☰
+            </button>
+
             <div class="nav-links" id="navLinks">
                 <button class="btn btn-ghost" id="loginBtn">Masuk</button>
                 <button class="btn btn-primary" id="registerBtn">Daftar</button>
@@ -51,14 +127,12 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <main class="hero">
         <div class="container">
             <div class="hero-content">
                 <h1>Sistem Pencatatan Notulen Digital</h1>
                 <p class="hero-subtitle">Buat, kelola, dan bagikan notulen rapat dengan mudah dan responsif.</p>
 
-                <!-- Quick search box -->
                 <div class="search-box">
                     <h2>Akses Cepat Notulen</h2>
                     <form id="searchForm">
@@ -69,7 +143,6 @@
                     </form>
                 </div>
 
-                <!-- Features -->
                 <div class="features">
                     <div class="feature-card card">
                         <span class="icon">📝</span>
@@ -91,19 +164,16 @@
         </div>
     </main>
 
-    <!-- LogoLoop Section -->
     <section class="logo-loop-section">
         <div class="logo-loop-container">
             <h2 class="logo-loop-title">BAHASA PEMOGRAMAN DAN APLIKASI YANG DIGUNAKAN</h2>
             <div class="logo-carousel">
                 <div class="logo-track" id="logoTrack">
-                    <!-- Logos akan diisi oleh logo-loop.js -->
-                </div>
+                    </div>
             </div>
         </div>
     </section>
 
-    <!-- Animated Features Section -->
     <section class="features-scroll-section">
         <div class="container">
             <h2 style="text-align: center; margin-bottom: 2rem; color: white; font-size: 1.75rem;">
@@ -111,13 +181,11 @@
             </h2>
             <div class="animated-scroll-container">
                 <div id="featuresScrollContainer" class="scroll-list-container">
-                    <!-- Features akan diisi oleh animated-scroll.js -->
-                </div>
+                    </div>
             </div>
         </div>
     </section>
 
-    <!-- Team Section -->
     <section class="team-section">
         <div class="container">
             <h2 class="team-title">Manpro Dan Anggota Kelompok</h2>
@@ -174,7 +242,6 @@
         </div>
     </section>
 
-    <!-- Social Media Navigation - Dipindahkan ke paling bawah -->
     <section class="social-media-bottom">
         <div class="container">
             <h2 style="text-align: center; margin-bottom: 1.5rem; color: #333; font-size: 1.5rem;">
@@ -183,16 +250,13 @@
             <p style="text-align: center; margin-bottom: 2rem; color: #666; max-width: 600px; margin-left: auto; margin-right: auto;">
                 Tetap terhubung dengan perkembangan terbaru dari tim SIPNOTUL melalui media sosial kami.
             </p>
-            <div id="socialNavContainer">
-                <!-- Social media pills akan diisi oleh social-nav.js -->
-            </div>
+            <div id="socialNavContainer"></div>
             <div style="text-align: center; margin-top: 2rem; color: #888; font-size: 0.85rem;">
                 © 2025 SIPNOTUL - Sistem Pencatatan Notulen Digital. All rights reserved.
             </div>
         </div>
     </section>
 
-    <!-- Login Modal -->
     <div id="loginModal" class="modal">
         <div class="modal-overlay" onclick="closeLoginModal()"></div>
         <div class="modal-content">
@@ -232,7 +296,6 @@
         </div>
     </div>
 
-    <!-- Register Modal -->
     <div id="registerModal" class="modal">
         <div class="modal-overlay" onclick="closeRegisterModal()"></div>
         <div class="modal-content">
@@ -287,42 +350,42 @@
         </div>
     </div>
 
-    <!-- Toast container -->
     <div id="toasts" class="toasts"></div>
 
-    <!-- JavaScript Dependencies -->
     <script src="src/logo-loop.js?v=1"></script>
     <script src="src/animated-scroll.js?v=1"></script>
     <script src="src/social-nav.js?v=1"></script>
     
     <script>
         // ============================================
+        // LOGIC HAMBURGER MENU (TAMBAHAN)
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const navLinks = document.getElementById('navLinks');
+
+            if(hamburgerBtn && navLinks) {
+                hamburgerBtn.addEventListener('click', () => {
+                    // Toggle class 'active' untuk menampilkan/sembunyikan menu
+                    navLinks.classList.toggle('active');
+                });
+            }
+        });
+
+        // ============================================
         // MAIN INITIALIZATION
         // ============================================
         function initializeComponents() {
             // Inisialisasi Logo Loop
-            if (typeof initLogoLoop === 'function') {
-                initLogoLoop();
-            } else {
-                console.error('initLogoLoop function not found');
-            }
+            if (typeof initLogoLoop === 'function') initLogoLoop();
             
             // Inisialisasi Animated Scroll
-            if (typeof initAnimatedScroll === 'function') {
-                initAnimatedScroll();
-            } else {
-                console.error('initAnimatedScroll function not found');
-            }
+            if (typeof initAnimatedScroll === 'function') initAnimatedScroll();
             
             // Inisialisasi Social Media Navigation
-            if (typeof initSocialNav === 'function') {
-                initSocialNav();
-            } else {
-                console.error('initSocialNav function not found');
-            }
+            if (typeof initSocialNav === 'function') initSocialNav();
         }
 
-        // Initialize ketika DOM siap
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initializeComponents);
         } else {
@@ -331,13 +394,11 @@
     </script>
     
     <script type="module">
+        // (Isi Script Module sama persis dengan sebelumnya, tidak ada perubahan logika di sini
+        // kecuali jika Anda menggunakan file auth.js yang berbeda)
         import { login, register, getCurrentUser, logout, showToast } from './src/auth.js?v=3';
 
-        // ============================================
-        // GLOBAL FUNCTIONS (for onclick handlers)
-        // ============================================
-        
-        // Toggle password visibility
+        // Global functions
         window.togglePassword = function(inputId, button) {
             const input = document.getElementById(inputId);
             if (input.type === 'password') {
@@ -349,7 +410,6 @@
             }
         };
 
-        // Modal controls
         window.openLoginModal = () => document.getElementById('loginModal').classList.add('show');
         window.closeLoginModal = () => document.getElementById('loginModal').classList.remove('show');
         window.openRegisterModal = () => document.getElementById('registerModal').classList.add('show');
@@ -367,67 +427,39 @@
             openLoginModal();
         };
 
-        // ============================================
-        // CHECK IF USER IS LOGGED IN
-        // ============================================
         const user = getCurrentUser();
-        console.log('[INDEX] Current user:', user);
         
         if (user) {
-            // User is logged in - show dashboard link
             document.getElementById('navLinks').innerHTML = `
-                <span style="color: white; margin-right: 1rem;">Halo, ${user.name}!</span>
+                <span style="color: black; margin-right: 1rem; font-weight:bold;">Halo, ${user.name}!</span>
                 <a href="dashboard.html" class="btn btn-ghost">Dashboard</a>
                 <button class="btn btn-ghost" id="navLogoutBtn">Keluar</button>
             `;
+             // Perhatikan: color saya ubah jadi black agar terlihat di menu mobile yg background putih
             
-            // Attach logout handler
             document.getElementById('navLogoutBtn').addEventListener('click', () => {
-                if (confirm('Anda yakin ingin keluar?')) {
-                    logout();
-                }
+                if (confirm('Anda yakin ingin keluar?')) logout();
             });
         } else {
-            // User not logged in - attach button handlers
             const loginBtn = document.getElementById('loginBtn');
             const registerBtn = document.getElementById('registerBtn');
             
-            console.log('[INDEX] Login button:', loginBtn);
-            console.log('[INDEX] Register button:', registerBtn);
-            
-            if (loginBtn) {
-                loginBtn.addEventListener('click', () => {
-                    console.log('[INDEX] Login button clicked');
-                    openLoginModal();
-                });
-            }
-            
-            if (registerBtn) {
-                registerBtn.addEventListener('click', () => {
-                    console.log('[INDEX] Register button clicked');
-                    openRegisterModal();
-                });
-            }
+            if (loginBtn) loginBtn.addEventListener('click', () => openLoginModal());
+            if (registerBtn) registerBtn.addEventListener('click', () => openRegisterModal());
         }
 
-        // ============================================
-        // LOGIN FORM HANDLER
-        // ============================================
+        // Login Logic
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const nim = document.getElementById('loginNim').value.trim();
             const password = document.getElementById('loginPassword').value;
             const remember = document.getElementById('rememberMe').checked;
             
-            // Show loading state
             const btn = document.getElementById('loginSubmitBtn');
             const btnText = document.getElementById('loginBtnText');
             const btnLoading = document.getElementById('loginBtnLoading');
             
-            btn.disabled = true;
-            btnText.style.display = 'none';
-            btnLoading.style.display = 'inline';
+            btn.disabled = true; btnText.style.display = 'none'; btnLoading.style.display = 'inline';
             
             try {
                 const user = await login(nim, password, remember);
@@ -435,18 +467,13 @@
                 setTimeout(() => window.location.href = 'dashboard.html', 1000);
             } catch (error) {
                 showToast(error.message, 'error');
-                btn.disabled = false;
-                btnText.style.display = 'inline';
-                btnLoading.style.display = 'none';
+                btn.disabled = false; btnText.style.display = 'inline'; btnLoading.style.display = 'none';
             }
         });
 
-        // ============================================
-        // REGISTER FORM HANDLER
-        // ============================================
+        // Register Logic
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const firstName = document.getElementById('regFirstName').value.trim();
             const lastName = document.getElementById('regLastName').value.trim();
             const nim = document.getElementById('regNim').value.trim();
@@ -455,81 +482,49 @@
             const password = document.getElementById('regPassword').value;
             const confirmPassword = document.getElementById('regConfirmPassword').value;
             
-            // Validate passwords match
-            if (password !== confirmPassword) {
-                showToast('Password tidak cocok', 'error');
-                return;
-            }
+            if (password !== confirmPassword) { showToast('Password tidak cocok', 'error'); return; }
+            if (password.length < 8) { showToast('Password minimal 8 karakter', 'error'); return; }
             
-            // Validate password length
-            if (password.length < 8) {
-                showToast('Password minimal 8 karakter', 'error');
-                return;
-            }
-            
-            // Show loading state
             const btn = document.getElementById('registerSubmitBtn');
             const btnText = document.getElementById('registerBtnText');
             const btnLoading = document.getElementById('registerBtnLoading');
             
-            btn.disabled = true;
-            btnText.style.display = 'none';
-            btnLoading.style.display = 'inline';
+            btn.disabled = true; btnText.style.display = 'none'; btnLoading.style.display = 'inline';
             
             try {
-                const user = await register({
-                    name: `${firstName} ${lastName}`,
-                    nim,
-                    email,
-                    programStudi: prodi,
-                    password
-                });
+                const user = await register({ name: `${firstName} ${lastName}`, nim, email, programStudi: prodi, password });
                 showToast('Registrasi berhasil!', 'success');
                 setTimeout(() => window.location.href = 'dashboard.html', 1000);
             } catch (error) {
                 showToast(error.message, 'error');
-                btn.disabled = false;
-                btnText.style.display = 'inline';
-                btnLoading.style.display = 'none';
+                btn.disabled = false; btnText.style.display = 'inline'; btnLoading.style.display = 'none';
             }
         });
 
-        // ============================================
-        // NOTE SEARCH HANDLER (DENGAN FITUR 4 DIGIT)
-        // ============================================
+        // Search Logic
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            // Ambil input dari kotak pencarian
             const inputCode = document.getElementById('noteCode').value.trim();
-            const searchBtn = e.target.querySelector('button'); // Tombol cari
+            const searchBtn = e.target.querySelector('button');
             
             if (!inputCode) return;
-
-            // Efek Loading (Ubah teks tombol)
             const originalText = searchBtn.textContent;
             searchBtn.textContent = '⏳ Mencari...';
             searchBtn.disabled = true;
 
             try {
-                // 1. Tanya ke Server: "Kode ini punya siapa?"
                 const response = await fetch(`php/search_note_by_code.php?code=${encodeURIComponent(inputCode)}`);
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    // 2. Jika Ketemu: Pindah ke Viewer menggunakan ID ASLI
-                    // Contoh: User ketik '1234' -> Server jawab ID 'NOT-ABC' -> Pindah ke viewer.html?code=NOT-ABC
                     window.location.href = `viewer.html?code=${result.idNotes}`;
                 } else {
-                    // 3. Jika Tidak Ketemu
-                    alert(result.message); // Tampilkan pesan error
+                    alert(result.message);
                 }
-
             } catch (err) {
                 console.error('Search Error:', err);
                 alert('Terjadi kesalahan koneksi ke server.');
             } finally {
-                // Kembalikan tombol seperti semula
                 searchBtn.textContent = originalText;
                 searchBtn.disabled = false;
             }
