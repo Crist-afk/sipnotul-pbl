@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>SIPNOTUL Viewer</title>
+</head>
+<body>
+
+<h2 id="judul"></h2>
+<p id="isi"></p>
+
+<div id="aksi"></div>
+
+<h3>Daftar Hadir</h3>
+<ul id="hadir"></ul>
+
+<script>
+const kode = new URLSearchParams(location.search).get("kode");
+
+fetch("viewer_share.php?kode=" + kode)
+.then(r=>r.json())
+.then(d=>{
+  if(d.status==="login_required"){
+    location.href="login.html?redirect="+location.href;
+    return;
+  }
+
+  judul.innerText=d.judul;
+  isi.innerText=d.isi;
+
+  if(d.boleh_hadir){
+    aksi.innerHTML+=`<button onclick="hadir()">✅ Hadir Rapat</button>`;
+  }
+
+  if(d.boleh_edit){
+    aksi.innerHTML+=`<button onclick="edit()">✏️ Edit</button>`;
+  }
+
+  d.hadir.forEach(n=>{
+    hadir.innerHTML+=`<li>${n}</li>`;
+  });
+});
+
+function hadir(){
+  fetch("hadir_share.php?kode="+kode)
+  .then(r=>r.json())
+  .then(r=>alert(r.message));
+}
+
+function edit(){
+  location.href="edit_notulensi.html?kode="+kode;
+}
+</script>
+
+</body>
+</html>
