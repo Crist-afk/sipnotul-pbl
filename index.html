@@ -6,14 +6,142 @@
     <title>SIPNOTUL - Sistem Pencatatan Notulen</title>
     <link rel="stylesheet" href="src/styles.css?v=2">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Logo Loop Styles - Embedded */
+        .logo-loop-section {
+            background: white;
+            padding: 4rem 0;
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+
+        .logo-loop-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .logo-loop-title {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .logo-carousel {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            padding: 2rem 0;
+        }
+
+        .logo-track {
+            display: flex;
+            gap: 4rem;
+            animation: scroll 30s linear infinite;
+            width: fit-content;
+        }
+
+        .logo-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 120px;
+            height: 60px;
+            transition: transform 0.3s;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .logo-item:hover {
+            transform: scale(1.1);
+        }
+
+        .logo-item img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            opacity: 0.85;
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+
+        .logo-item:hover img {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        
+        /* Color styling for each logo */
+        .logo-item[data-logo="html5"] img {
+            filter: invert(45%) sepia(89%) saturate(2588%) hue-rotate(0deg) brightness(101%) contrast(101%);
+        }
+        
+        .logo-item[data-logo="css3"] img {
+            filter: invert(36%) sepia(96%) saturate(1521%) hue-rotate(186deg) brightness(96%) contrast(101%);
+        }
+        
+        .logo-item[data-logo="javascript"] img {
+            filter: invert(87%) sepia(58%) saturate(2618%) hue-rotate(359deg) brightness(102%) contrast(104%);
+        }
+        
+        .logo-item[data-logo="php"] img {
+            filter: invert(40%) sepia(68%) saturate(1746%) hue-rotate(212deg) brightness(94%) contrast(101%);
+        }
+        
+        .logo-item[data-logo="mysql"] img {
+            filter: invert(53%) sepia(85%) saturate(2240%) hue-rotate(169deg) brightness(88%) contrast(101%);
+        }
+        
+        .logo-item[data-logo="git"] img {
+            filter: invert(42%) sepia(56%) saturate(1771%) hue-rotate(336deg) brightness(95%) contrast(101%);
+        }
+        
+        .logo-item[data-logo="github"] img {
+            filter: invert(10%) sepia(7%) saturate(1186%) hue-rotate(169deg) brightness(96%) contrast(89%);
+        }
+        
+        .logo-item[data-logo="bootstrap"] img {
+            filter: invert(24%) sepia(79%) saturate(2613%) hue-rotate(246deg) brightness(93%) contrast(106%);
+        }
+
+        @keyframes scroll {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .logo-carousel:hover .logo-track {
+            animation-play-state: paused;
+        }
+
+        /* Fix Team Card Alignment */
+        .team-card .member-info {
+            margin-top: auto !important;
+        }
+        
+        .team-card .member-name {
+            margin-bottom: 0.5rem !important;
+        }
+        
+        .team-card .member-role {
+            margin: 0 !important;
+            line-height: 1.6 !important;
+        }
+
+        @media (max-width: 768px) {
+            .logo-item {
+                min-width: 100px;
+                height: 50px;
+            }
+        }
+    </style>
 </head>
 <body class="landing-page">
-    <!-- 
-        ============================================
-        NAVIGATION BAR
-        ============================================
-        Sticky navigation with logo and auth buttons
-    -->
+    <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="container">
             <a href="/" class="logo">
@@ -21,19 +149,13 @@
                 <span>SIPNOTUL</span>
             </a>
             <div class="nav-links" id="navLinks">
-                <!-- Buttons will be inserted here by JavaScript -->
                 <button class="btn btn-ghost" id="loginBtn">Masuk</button>
                 <button class="btn btn-primary" id="registerBtn">Daftar</button>
             </div>
         </div>
     </nav>
 
-    <!-- 
-        ============================================
-        HERO SECTION
-        ============================================
-        Main landing page content
-    -->
+    <!-- Hero Section -->
     <main class="hero">
         <div class="container">
             <div class="hero-content">
@@ -73,12 +195,76 @@
         </div>
     </main>
 
-    <!-- 
-        ============================================
-        LOGIN MODAL
-        ============================================
-        Modal for user login
-    -->
+    <!-- LogoLoop Section -->
+    <section class="logo-loop-section">
+        <div class="logo-loop-container">
+            <h2 class="logo-loop-title">BAHASA PEMOGRAMAN DAN APLIKASI YANG DIGUNAKAN</h2>
+            <div class="logo-carousel">
+                <div class="logo-track" id="logoTrack">
+                    <!-- Logos will be inserted here by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="team-section">
+        <div class="container">
+            <h2 class="team-title">Manpro Dan Anggota Kelompok</h2>
+            
+            <div class="team-container">
+                <div class="team-card">
+                    <div class="team-bg" style="background-image: url('./assets/tes1.png');"></div>
+                    <div class="team-content">
+                        <div class="member-number">1</div>
+                        <div class="member-info">
+                            <h3 class="member-name">Dwi Amalia Purnamasari</h3>
+                            <p class="member-role">NIM: 33125010XX<br>Project Manager</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="team-card">
+                    <div class="team-bg" style="background-image: url('./assets/fazri.jpeg');"></div>
+                    <div class="team-content">
+                        <div class="member-number">2</div>
+                        <div class="member-info">
+                            <h3 class="member-name">Fazri Rahman</h3>
+                            <p class="member-role">NIM: 3312501038<br>Backend Developer</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="team-card">
+                    <div class="team-bg" style="background-image: url('./assets/cahyati.png');"></div>
+                    <div class="team-content">
+                        <div class="member-number">3</div>
+                        <div class="member-info">
+                            <h3 class="member-name">Cahyati Lamona Sitohang</h3>
+                            <p class="member-role">NIM: 3312501040<br>Frontend Developer</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="team-card">
+                    <div class="team-bg" style="background-image: url('./assets/tes2.png');"></div>
+                    <div class="team-content">
+                        <div class="member-number">4</div>
+                        <div class="member-info">
+                            <h3 class="member-name">Crist Garcia Pasaribu</h3>
+                            <p class="member-role">NIM: 3312501041<br>UI/UX Designer</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 1.5rem; color: #666; font-size: 0.9rem;">
+                Tim SIPNOTUL - Politeknik Negeri Batam <span style="margin-left: 5px;">→</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
     <div id="loginModal" class="modal">
         <div class="modal-overlay" onclick="closeLoginModal()"></div>
         <div class="modal-content">
@@ -118,12 +304,7 @@
         </div>
     </div>
 
-    <!-- 
-        ============================================
-        REGISTER MODAL
-        ============================================
-        Modal for user registration
-    -->
+    <!-- Register Modal -->
     <div id="registerModal" class="modal">
         <div class="modal-overlay" onclick="closeRegisterModal()"></div>
         <div class="modal-content">
@@ -178,15 +359,52 @@
         </div>
     </div>
 
-    <!-- Toast container for notifications -->
+    <!-- Toast container -->
     <div id="toasts" class="toasts"></div>
 
-    <!-- 
-        ============================================
-        JAVASCRIPT
-        ============================================
-        All functionality is handled here
-    -->
+    <!-- JavaScript -->
+    <script>
+        // ============================================
+        // Logo Loop Implementation - Simple & Works!
+        // ============================================
+        const logos = [
+            { src: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/html5.svg', alt: 'HTML5', name: 'html5', link: 'https://developer.mozilla.org/en-US/docs/Web/HTML' },
+            { src: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/css3.svg', alt: 'CSS3', name: 'css3', link: 'https://developer.mozilla.org/en-US/docs/Web/CSS' },
+            { src: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/javascript.svg', alt: 'JavaScript', name: 'javascript', link: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript' },
+            { src: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/php.svg', alt: 'PHP', name: 'php', link: 'https://www.php.net/' },
+            { src: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/mysql.svg', alt: 'MySQL', name: 'mysql', link: 'https://www.mysql.com/' },
+            { src: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/git.svg', alt: 'Git', name: 'git', link: 'https://git-scm.com/' },
+            { src: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/github.svg', alt: 'GitHub', name: 'github', link: 'https://github.com/Crist-afk/sipnotul-pbl.git' },
+            { src: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/bootstrap.svg', alt: 'Bootstrap', name: 'bootstrap', link: 'https://getbootstrap.com/' }
+        ];
+
+        function initLogoLoop() {
+            const track = document.getElementById('logoTrack');
+            if (!track) {
+                console.error('Logo track not found');
+                return;
+            }
+            
+            // Create logo HTML with clickable links
+            const logosHTML = logos.map(logo => `
+                <a href="${logo.link}" target="_blank" rel="noopener noreferrer" class="logo-item" data-logo="${logo.name}" title="${logo.alt}">
+                    <img src="${logo.src}" alt="${logo.alt}">
+                </a>
+            `).join('');
+            
+            // Duplicate for seamless loop
+            track.innerHTML = logosHTML + logosHTML;
+            console.log('✅ Logo carousel initialized successfully');
+        }
+
+        // Initialize on DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initLogoLoop);
+        } else {
+            initLogoLoop();
+        }
+    </script>
+    
     <script type="module">
         import { login, register, getCurrentUser, logout, showToast } from './src/auth.js?v=3';
 
@@ -351,7 +569,7 @@
             }
         });
 
-// ============================================
+        // ============================================
         // NOTE SEARCH HANDLER (DENGAN FITUR 4 DIGIT)
         // ============================================
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
