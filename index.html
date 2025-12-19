@@ -8,6 +8,7 @@
     <!-- CSS untuk komponen terpisah -->
     <link rel="stylesheet" href="src/logo-loop.css?v=1">
     <link rel="stylesheet" href="src/animated-scroll.css?v=1">
+    <link rel="stylesheet" href="src/social-nav.css?v=1">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/motion@latest/dist/motion.js"></script>
@@ -25,6 +26,13 @@
         .team-card .member-role {
             margin: 0 !important;
             line-height: 1.6 !important;
+        }
+
+        /* Social Media Section at Bottom */
+        .social-media-bottom {
+            padding: 3rem 0;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
         }
     </style>
 </head>
@@ -149,7 +157,7 @@
                 </div>
 
                 <div class="team-card">
-                    <div class="team-bg" style="background-image: url('./assets/tes2.png');"></div>
+                    <div class="team-bg" style="background-image: url('./assets/test2.png');"></div>
                     <div class="team-content">
                         <div class="member-number">4</div>
                         <div class="member-info">
@@ -162,6 +170,24 @@
             
             <div style="text-align: center; margin-top: 1.5rem; color: #666; font-size: 0.9rem;">
                 Tim SIPNOTUL - Politeknik Negeri Batam <span style="margin-left: 5px;"></span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Media Navigation - Dipindahkan ke paling bawah -->
+    <section class="social-media-bottom">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 1.5rem; color: #333; font-size: 1.5rem;">
+                Ikuti Sosial Media Kami
+            </h2>
+            <p style="text-align: center; margin-bottom: 2rem; color: #666; max-width: 600px; margin-left: auto; margin-right: auto;">
+                Tetap terhubung dengan perkembangan terbaru dari tim SIPNOTUL melalui media sosial kami.
+            </p>
+            <div id="socialNavContainer">
+                <!-- Social media pills akan diisi oleh social-nav.js -->
+            </div>
+            <div style="text-align: center; margin-top: 2rem; color: #888; font-size: 0.85rem;">
+                © 2025 SIPNOTUL - Sistem Pencatatan Notulen Digital. All rights reserved.
             </div>
         </div>
     </section>
@@ -267,6 +293,7 @@
     <!-- JavaScript Dependencies -->
     <script src="src/logo-loop.js?v=1"></script>
     <script src="src/animated-scroll.js?v=1"></script>
+    <script src="src/social-nav.js?v=1"></script>
     
     <script>
         // ============================================
@@ -285,6 +312,13 @@
                 initAnimatedScroll();
             } else {
                 console.error('initAnimatedScroll function not found');
+            }
+            
+            // Inisialisasi Social Media Navigation
+            if (typeof initSocialNav === 'function') {
+                initSocialNav();
+            } else {
+                console.error('initSocialNav function not found');
             }
         }
 
