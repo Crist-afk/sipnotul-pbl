@@ -1,0 +1,145 @@
+/* Social Media Navigation Styles */
+.social-nav-container {
+    position: relative;
+    margin: 2rem auto;
+    width: fit-content;
+    z-index: 10;
+}
+
+.social-nav {
+    --social-nav-h: 48px;
+    --social-pill-pad-x: 20px;
+    --social-pill-gap: 12px;
+    width: max-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.social-nav-items {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: var(--social-nav-h);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 9999px;
+    padding: 4px;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+}
+
+.social-list {
+    list-style: none;
+    display: flex;
+    align-items: stretch;
+    gap: var(--social-pill-gap);
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.social-list > li {
+    display: flex;
+    height: 100%;
+}
+
+.social-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 0 var(--social-pill-pad-x);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    color: #333;
+    text-decoration: none;
+    border-radius: 9999px;
+    box-sizing: border-box;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 0;
+    white-space: nowrap;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.social-pill:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.social-icon {
+    margin-right: 8px;
+    font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.social-label {
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+}
+
+/* Instagram gradient effect */
+.social-pill[aria-label*="Instagram"] {
+    background: linear-gradient(45deg, 
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(255, 255, 255, 0.98) 100%
+    );
+}
+
+.social-pill[aria-label*="Instagram"]:hover {
+    background: linear-gradient(45deg, 
+        rgba(255, 255, 255, 1) 0%,
+        rgba(255, 255, 255, 1) 100%
+    );
+    border-color: rgba(225, 48, 108, 0.2);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .social-nav-container {
+        width: 90%;
+        margin: 1.5rem auto;
+    }
+    
+    .social-nav-items {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .social-pill {
+        padding: 0 16px;
+        font-size: 14px;
+    }
+    
+    .social-icon {
+        margin-right: 6px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .social-nav {
+        --social-nav-h: 44px;
+        --social-pill-pad-x: 14px;
+        --social-pill-gap: 8px;
+    }
+    
+    .social-pill {
+        padding: 0 12px;
+        font-size: 13px;
+    }
+    
+    .social-icon {
+        margin-right: 4px;
+        font-size: 15px;
+    }
+}
