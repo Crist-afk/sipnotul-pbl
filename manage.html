@@ -6,6 +6,519 @@
     <title>Kelola Notulen - SIPNOTUL</title>
     <link rel="stylesheet" href="src/styles.css?v=2">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Responsive Design untuk Manage Page */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Header Responsive */
+        .site-header {
+            padding: 1rem;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-decoration: none;
+        }
+
+        .logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .main-nav {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .main-nav a {
+            text-decoration: none;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .main-nav a:hover {
+            color: var(--primary);
+        }
+
+        .main-nav a.active {
+            color: var(--primary);
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.25rem;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Hamburger Menu untuk Mobile */
+        .hamburger-nav {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+            display: none;
+            z-index: 100;
+            margin-top: 0.5rem;
+        }
+
+        .user-menu.open .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-menu a,
+        .dropdown-menu button {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            background: none;
+            border: none;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .dropdown-menu a:hover,
+        .dropdown-menu button:hover {
+            background: #f3f4f6;
+            color: var(--primary);
+        }
+
+        /* Main Content Responsive */
+        .container {
+            width: 100%;
+            padding: 0 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header dengan Search dan Sort */
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .notes-header h2 {
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .notes-controls {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .form-input {
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-input {
+            min-width: 180px;
+            flex: 1;
+        }
+
+        .sort-select {
+            min-width: 140px;
+        }
+
+        /* Statistics Section */
+        .stats-section {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Notes Grid */
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .note-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1.25rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .note-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .note-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+        }
+
+        .note-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-public {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-private {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .note-meta {
+            font-size: 0.8125rem;
+            color: #6b7280;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .note-content {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #333;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-danger:hover {
+            background: #fecaca;
+        }
+
+        .btn-back {
+            background: #e5e7eb;
+            color: #333;
+        }
+
+        .btn-back:hover {
+            background: #d1d5db;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: none;
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Toast Container */
+        .toasts {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            color: white;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+            max-width: 90vw;
+        }
+
+        .toast.success {
+            background-color: #10b981;
+        }
+
+        .toast.error {
+            background-color: #ef4444;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* ========================================= */
+        /* TABLET (768px - 1024px)                  */
+        /* ========================================= */
+        @media (min-width: 768px) {
+            .site-header {
+                padding: 1.5rem 2rem;
+            }
+
+            .header-inner {
+                gap: 2rem;
+            }
+
+            .logo {
+                font-size: 1.2rem;
+            }
+
+            .logo img {
+                height: 45px;
+            }
+
+            .container {
+                padding: 0 2rem;
+                padding-top: 2rem;
+                padding-bottom: 2rem;
+            }
+
+            .card {
+                padding: 2rem;
+            }
+
+            .notes-header {
+                gap: 1.5rem;
+            }
+
+            .notes-header h2 {
+                font-size: 1.75rem;
+            }
+
+            .notes-controls {
+                gap: 1.5rem;
+            }
+
+            .search-input {
+                min-width: 220px;
+            }
+
+            .sort-select {
+                min-width: 160px;
+            }
+
+            .notes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: 2rem;
+            }
+
+            .note-card {
+                padding: 1.5rem;
+            }
+        }
+
+        /* ========================================= */
+        /* DESKTOP (1024px+)                        */
+        /* ========================================= */
+        @media (min-width: 1024px) {
+            .header-inner {
+                gap: 3rem;
+            }
+
+            .container {
+                max-width: 1200px;
+            }
+
+            .notes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            }
+
+            .notes-header h2 {
+                font-size: 2rem;
+            }
+        }
+
+        /* ========================================= */
+        /* ULTRA-WIDE (1440px+)                     */
+        /* ========================================= */
+        @media (min-width: 1440px) {
+            .container {
+                max-width: 1400px;
+            }
+
+            .notes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- 
@@ -26,6 +539,9 @@
                 </nav>
             </div>
             <div class="header-controls">
+                <button class="btn btn-back btn-sm" id="backBtn" title="Kembali ke Dashboard">
+                    ← Kembali
+                </button>
                 <button class="btn btn-primary btn-sm" id="newNoteBtn">+ Buat Notulen</button>
                 <div class="user-menu">
                     <button class="btn btn-secondary btn-sm" id="userMenuBtn">
@@ -48,14 +564,14 @@
     -->
     <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
         <div class="card">
-            <!-- Header with search and sort -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <!-- Header dengan search dan sort -->
+            <div class="notes-header">
                 <h2>Kelola Notulen Saya</h2>
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <div class="notes-controls">
                     <!-- Search input -->
-                    <input type="text" class="form-input" id="searchInput" placeholder="🔍 Cari notulen..." style="min-width: 200px;">
+                    <input type="text" class="form-input search-input" id="searchInput" placeholder="🔍 Cari notulen...">
                     <!-- Sort dropdown -->
-                    <select class="form-input" id="sortSelect" style="min-width: 150px;">
+                    <select class="form-input sort-select" id="sortSelect">
                         <option value="newest">Terbaru</option>
                         <option value="oldest">Terlama</option>
                         <option value="title">Judul A-Z</option>
@@ -65,18 +581,18 @@
             </div>
 
             <!-- Statistics -->
-            <div style="display: flex; gap: 2rem; padding: 1rem; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 1.5rem; flex-wrap: wrap;">
-                <div>
-                    <span style="color: var(--text-muted); font-size: 0.875rem;">Total Notulen:</span>
-                    <span style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-left: 0.5rem;" id="totalNotes">0</span>
+            <div class="stats-section">
+                <div class="stat-item">
+                    <span class="stat-label">Total Notulen:</span>
+                    <span class="stat-value" id="totalNotes">0</span>
                 </div>
-                <div>
-                    <span style="color: var(--text-muted); font-size: 0.875rem;">Publik:</span>
-                    <span style="font-size: 1.5rem; font-weight: 700; color: var(--success); margin-left: 0.5rem;" id="publicNotes">0</span>
+                <div class="stat-item">
+                    <span class="stat-label">Publik:</span>
+                    <span class="stat-value" style="color: var(--success);" id="publicNotes">0</span>
                 </div>
-                <div>
-                    <span style="color: var(--text-muted); font-size: 0.875rem;">Privat:</span>
-                    <span style="font-size: 1.5rem; font-weight: 700; color: var(--gray-500); margin-left: 0.5rem;" id="privateNotes">0</span>
+                <div class="stat-item">
+                    <span class="stat-label">Privat:</span>
+                    <span class="stat-value" style="color: #6b7280;" id="privateNotes">0</span>
                 </div>
             </div>
 
@@ -86,10 +602,10 @@
             </div>
 
             <!-- Empty state -->
-            <div id="emptyState" style="display: none; text-align: center; padding: 3rem 1rem;">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">📝</div>
+            <div id="emptyState" class="empty-state">
+                <div class="empty-state-icon">📝</div>
                 <h3>Belum ada notulen</h3>
-                <p class="text-muted">Anda belum membuat notulen apapun. Mulai buat notulen pertama Anda!</p>
+                <p>Anda belum membuat notulen apapun. Mulai buat notulen pertama Anda!</p>
                 <button class="btn btn-primary" id="createFirstNoteBtn">+ Buat Notulen Pertama</button>
             </div>
         </div>
@@ -106,8 +622,7 @@
  <script type="module">
         import { requireAuth, getCurrentUser, logout, showToast } from './src/auth.js';
         
-        // HAPUS import storage.js, kita ganti dengan variable array
-        let dbNotes = []; // Wadah untuk menyimpan data dari database
+        let dbNotes = [];
         let searchQuery = '';
         let currentSort = 'newest';
 
@@ -128,14 +643,10 @@
         // ============================================
         async function loadNotesFromDB() {
             try {
-                // Panggil file PHP
                 const response = await fetch(`php/get_user_notes.php?nim=${user.nim || user.id}`);
                 const data = await response.json();
                 
-                // Simpan ke variabel global
                 dbNotes = data;
-
-                // Update Tampilan
                 updateStats();
                 renderNotes();
                 
@@ -150,7 +661,6 @@
         // 2. UPDATE STATISTICS
         // ============================================
         function updateStats() {
-            // Hitung statistik dari data database (dbNotes)
             const publicCount = dbNotes.filter(n => n.isPublic == 1).length;
             
             document.getElementById('totalNotes').textContent = dbNotes.length;
@@ -162,10 +672,8 @@
         // 3. FILTER & SORT LOGIC
         // ============================================
         function getFilteredNotes() {
-            // Gunakan spread operator [...] agar array asli tidak rusak
             let notes = [...dbNotes]; 
             
-            // Filter Pencarian
             if (searchQuery) {
                 const query = searchQuery.toLowerCase();
                 notes = notes.filter(n => 
@@ -175,7 +683,6 @@
                 );
             }
             
-            // Sorting / Pengurutan
             notes.sort((a, b) => {
                 switch (currentSort) {
                     case 'newest':
@@ -215,13 +722,13 @@
             
             container.innerHTML = notes.map(note => `
                 <div class="note-card card">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                    <div class="note-header">
                         <div class="note-title">${escapeHtml(note.title)}</div>
-                        <span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; ${note.isPublic == 1 ? 'background: #d1fae5; color: #065f46;' : 'background: var(--gray-100); color: var(--text-muted);'}">
+                        <span class="note-badge ${note.isPublic == 1 ? 'badge-public' : 'badge-private'}">
                             ${note.isPublic == 1 ? '🌐 Publik' : '🔒 Privat'}
                         </span>
                     </div>
-                    <div style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                    <div class="note-meta">
                         <div>📅 Dibuat: ${formatDate(note.createdAt)}</div>
                         ${note.meetingDate ? `<div>📆 Rapat: ${formatDate(note.meetingDate)}</div>` : ''}
                         ${note.location ? `<div>📍 ${escapeHtml(note.location)}</div>` : ''}
@@ -256,7 +763,6 @@
         // ACTION HANDLERS
         // ============================================
         
-        // Fungsi Hapus (Terhubung ke delete_note.php)
         window.handleDeleteNote = async (id) => {
             if (confirm('Apakah Anda yakin ingin menghapus notulen ini? Permanen.')) {
                 try {
@@ -269,7 +775,7 @@
                     
                     if(result.status === 'success') {
                         showToast('Notulen berhasil dihapus', 'success');
-                        loadNotesFromDB(); // Refresh data tanpa reload
+                        loadNotesFromDB();
                     } else {
                         showToast('Gagal menghapus: ' + result.message, 'error');
                     }
@@ -280,6 +786,10 @@
         };
 
         // Event Listeners UI
+        document.getElementById('backBtn').addEventListener('click', () => {
+            window.location.href = 'dashboard.html';
+        });
+
         document.getElementById('searchInput').addEventListener('input', (e) => {
             searchQuery = e.target.value.trim();
             renderNotes();
@@ -290,8 +800,13 @@
             renderNotes();
         });
         
-        document.getElementById('newNoteBtn').addEventListener('click', () => window.location.href = 'editor.html');
-        document.getElementById('createFirstNoteBtn').addEventListener('click', () => window.location.href = 'editor.html');
+        document.getElementById('newNoteBtn').addEventListener('click', () => {
+            window.location.href = 'editor.html';
+        });
+
+        document.getElementById('createFirstNoteBtn').addEventListener('click', () => {
+            window.location.href = 'editor.html';
+        });
         
         document.getElementById('logoutBtn').addEventListener('click', () => {
             if (confirm('Anda yakin ingin keluar?')) logout();
@@ -302,7 +817,9 @@
             e.stopPropagation();
             document.querySelector('.user-menu').classList.toggle('open');
         });
-        document.addEventListener('click', () => document.querySelector('.user-menu').classList.remove('open'));
+        document.addEventListener('click', () => {
+            document.querySelector('.user-menu').classList.remove('open');
+        });
 
     </script>
 </body>

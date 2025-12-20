@@ -6,19 +6,19 @@
 // Data sosial media tim
 const socialMediaItems = [
     {
-        label: "Crist Garcia Pasaribu",
+        label: "@Crist",
         href: "https://www.instagram.com/chytilmn_?igsh=NXFqaHI3Nzk5ZnY1",
         ariaLabel: "Instagram Cahyati Lamona Sitohang",
         icon: "📷"
     },
     {
-        label: "Cahyati Lamona Sitohang",
+        label: "@Cahyati",
         href: "https://www.instagram.com/crist._.0?igsh=eWt6amoxMmp2NmY",
         ariaLabel: "Instagram Crist Garcia Pasaribu",
         icon: "📱"
     },
     {
-        label: "Fazri Rahman",
+        label: "@Fazri",
         href: "https://www.instagram.com/crist._.0?igsh=eWt6amoxMmp2NmY",
         ariaLabel: "Instagram Crist Garcia Pasaribu",
         icon: "📷"

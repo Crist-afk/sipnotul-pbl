@@ -6,26 +6,462 @@
     <title>Lihat Notulen - SIPNOTUL</title>
     <link rel="stylesheet" href="src/styles.css?v=2">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Responsive Design untuk Viewer Page */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Header Responsive */
+        .site-header {
+            padding: 1rem;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-decoration: none;
+            color: var(--primary);
+        }
+
+        .logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Main Content */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 0 1rem;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #333;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #333;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-ghost:hover {
+            background: #f3f4f6;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-back {
+            background: #e5e7eb;
+            color: #333;
+        }
+
+        .btn-back:hover {
+            background: #d1d5db;
+        }
+
+        /* Note Content */
+        .note-header {
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .note-header h1 {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            color: #333;
+            word-break: break-word;
+        }
+
+        .note-meta {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .note-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Sections */
+        .note-section {
+            margin-bottom: 2rem;
+        }
+
+        .note-section h3 {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .note-section p {
+            white-space: pre-wrap;
+            line-height: 1.6;
+            color: #333;
+            word-break: break-word;
+        }
+
+        /* Attendees List */
+        .attendees-section {
+            margin-bottom: 2rem;
+        }
+
+        .attendees-section h3 {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .attendees-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0;
+            list-style: none;
+            margin: 0;
+        }
+
+        .attendee-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            padding: 0.5rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+        }
+
+        .attendee-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .attendee-nim {
+            color: #6b7280;
+            font-size: 0.8em;
+            font-weight: normal;
+        }
+
+        /* Footer */
+        .note-footer {
+            border-top: 2px solid #e5e7eb;
+            padding-top: 1.5rem;
+            margin-top: 2rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .note-footer p {
+            margin: 0;
+        }
+
+        /* Loading State */
+        .loading-state {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        .loading-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .loading-state p {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        /* Error State */
+        .error-state {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .error-state h2 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .error-state p {
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Toast Container */
+        .toasts {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            color: white;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+            max-width: 90vw;
+        }
+
+        .toast.success {
+            background-color: #10b981;
+        }
+
+        .toast.error {
+            background-color: #ef4444;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .site-header {
+                display: none;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 0;
+            }
+
+            .card {
+                box-shadow: none;
+                padding: 0;
+            }
+
+            .btn {
+                display: none;
+            }
+        }
+
+        /* ========================================= */
+        /* TABLET (768px - 1024px)                  */
+        /* ========================================= */
+        @media (min-width: 768px) {
+            .site-header {
+                padding: 1.5rem 2rem;
+            }
+
+            .header-inner {
+                padding: 0 2rem;
+            }
+
+            .logo {
+                font-size: 1.2rem;
+            }
+
+            .logo img {
+                height: 45px;
+            }
+
+            .header-controls {
+                gap: 1rem;
+            }
+
+            .container {
+                padding: 0 2rem;
+                padding-top: 2rem;
+                padding-bottom: 2rem;
+            }
+
+            .card {
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 2rem;
+            }
+
+            .note-header h1 {
+                font-size: 2rem;
+            }
+
+            .note-meta {
+                gap: 2rem;
+                font-size: 0.9rem;
+            }
+
+            .note-section h3 {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* ========================================= */
+        /* DESKTOP (1024px+)                        */
+        /* ========================================= */
+        @media (min-width: 1024px) {
+            .site-header {
+                padding: 1.5rem 2rem;
+            }
+
+            .header-inner {
+                max-width: 1200px;
+                padding: 0;
+            }
+
+            .container {
+                max-width: 1000px;
+            }
+
+            .card {
+                max-width: 950px;
+                padding: 2.5rem;
+            }
+
+            .note-header h1 {
+                font-size: 2.25rem;
+            }
+
+            .note-meta {
+                gap: 2.5rem;
+            }
+
+            .note-section h3 {
+                font-size: 1.3rem;
+            }
+
+            .attendee-item {
+                font-size: 0.9rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+
+        /* ========================================= */
+        /* ULTRA-WIDE (1440px+)                     */
+        /* ========================================= */
+        @media (min-width: 1440px) {
+            .container {
+                max-width: 1100px;
+            }
+
+            .card {
+                max-width: 1050px;
+            }
+        }
+    </style>
 </head>
 <body>
     <header class="site-header">
-        <div class="container header-inner">
-            <a href="index.html" class="logo" style="color: var(--primary);">
+        <div class="header-inner">
+            <a href="index.html" class="logo">
                 <img src="./assets/logo.png" alt="SIPNOTUL Logo">
                 <span>SIPNOTUL</span>
             </a>
             <div class="header-controls">
-                <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️ Cetak</button>
-                <a href="dashboard.html" class="btn btn-ghost btn-sm">← Kembali</a>
+                <button class="btn btn-secondary btn-sm" onclick="window.print()" title="Cetak notulen">🖨️ Cetak</button>
+                <a href="manage.html" class="btn btn-back btn-sm" title="Kembali ke Kelola Notulen">← Kembali</a>
+                <a href="index.html" class="btn btn-ghost btn-sm" title="Kembali ke Halaman Awal">Halaman Awal</a>
             </div>
         </div>
     </header>
 
-    <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
-        <div class="card" id="noteContent" style="max-width: 800px; margin: 0 auto;">
-            <div style="text-align: center; padding: 2rem;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
-                <p class="text-muted">Memuat notulen...</p>
+    <main class="container" style="padding-top: 1.5rem; padding-bottom: 2rem;">
+        <div class="card" id="noteContent">
+            <div class="loading-state">
+                <div class="loading-icon">⏳</div>
+                <p>Memuat notulen...</p>
             </div>
         </div>
     </main>
@@ -50,7 +486,6 @@
         // ============================================
         async function loadNoteFromDB(id) {
             try {
-                // Panggil PHP
                 const response = await fetch(`php/get_note_detail.php?id=${id}`);
                 const result = await response.json();
 
@@ -76,46 +511,36 @@
             
             if (note.attendeesList && note.attendeesList.length > 0) {
                 const listItems = note.attendeesList.map(person => `
-                    <li style="
-                        display: inline-block; 
-                        background: var(--gray-50, #f9fafb); 
-                        border: 1px solid var(--border, #e5e7eb);
-                        padding: 0.25rem 0.75rem; 
-                        border-radius: 20px; 
-                        margin-right: 0.5rem; 
-                        margin-bottom: 0.5rem;
-                        font-size: 0.875rem;">
-                        👤 ${escapeHtml(person.name)} 
-                        ${person.nim && person.nim !== '-' ? `<span style="color: gray; font-size: 0.8em;">(${person.nim})</span>` : ''}
+                    <li class="attendee-item">
+                        <span class="attendee-name">👤 ${escapeHtml(person.name)}</span>
+                        ${person.nim && person.nim !== '-' ? `<span class="attendee-nim">(${escapeHtml(person.nim)})</span>` : ''}
                     </li>
                 `).join('');
 
                 attendeesHtml = `
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="margin-bottom: 0.75rem;">Daftar Hadir</h3>
-                        <ul style="padding: 0; list-style: none; margin: 0;">
+                    <div class="attendees-section">
+                        <h3>Daftar Hadir</h3>
+                        <ul class="attendees-list">
                             ${listItems}
                         </ul>
                     </div>
                 `;
             } else {
-                attendeesHtml = '<div style="margin-bottom: 2rem;"><p class="text-muted">Tidak ada data peserta.</p></div>';
+                attendeesHtml = '<div class="attendees-section"><p style="color: #6b7280;">Tidak ada data peserta.</p></div>';
             }
             // ----------------------------------
 
             container.innerHTML = `
-                <div style="border-bottom: 2px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
-                    <h1 style="margin-bottom: 1rem;">${escapeHtml(note.title)}</h1>
+                <div class="note-header">
+                    <h1>${escapeHtml(note.title)}</h1>
                     
-                    <div style="display: flex; gap: 2rem; flex-wrap: wrap; color: var(--text-muted); font-size: 0.875rem;">
+                    <div class="note-meta">
                         ${note.meetingDate ? `<div>📅 ${formatDate(note.meetingDate)}</div>` : ''}
-                        ${note.time ? `<div>🕐 ${note.time}</div>` : ''}
+                        ${note.time ? `<div>🕐 ${escapeHtml(note.time)}</div>` : ''}
                         ${note.location ? `<div>📍 ${escapeHtml(note.location)}</div>` : ''}
-                        
-                        ${note.accessCode ? `<div>🔑 Kode: <strong style="color: #000;">${note.accessCode}</strong></div>` : ''}
-                        
-                        <div style="font-weight:600; color:var(--primary)">
-                             ${note.isPublic == 1 ? '🌐 Publik' : '🔒 Privat'}
+                        ${note.accessCode ? `<div>🔑 Kode: <strong>${escapeHtml(note.accessCode)}</strong></div>` : ''}
+                        <div style="font-weight: 600; color: var(--primary);">
+                            ${note.isPublic == 1 ? '🌐 Publik' : '🔒 Privat'}
                         </div>
                     </div>
                 </div>
@@ -127,19 +552,19 @@
                 ${renderSection('Keputusan', note.decisions)}
                 ${renderSection('Tindak Lanjut', note.followUp)}
 
-                <div style="border-top: 2px solid var(--border); padding-top: 1.5rem; margin-top: 2rem; font-size: 0.875rem; color: var(--text-muted);">
+                <div class="note-footer">
                     <p>Dibuat oleh <strong>${escapeHtml(note.authorName || 'Tidak Diketahui')}</strong> pada ${formatDate(note.createdAt)}</p>
                 </div>
             `;
         }
 
-        // Helper untuk merender bagian (agar kode tidak berulang)
+        // Helper untuk merender bagian
         function renderSection(title, content) {
             if (!content) return '';
             return `
-                <div style="margin-bottom: 2rem;">
-                    <h3 style="margin-bottom: 0.5rem;">${title}</h3>
-                    <p style="white-space: pre-wrap; line-height: 1.6;">${escapeHtml(content)}</p>
+                <div class="note-section">
+                    <h3>${title}</h3>
+                    <p>${escapeHtml(content)}</p>
                 </div>
             `;
         }
@@ -150,11 +575,14 @@
         function showError(message) {
             const container = document.getElementById('noteContent');
             container.innerHTML = `
-                <div style="text-align: center; padding: 2rem;">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+                <div class="error-state">
+                    <div class="error-icon">❌</div>
                     <h2>Gagal Memuat</h2>
-                    <p class="text-muted">${message}</p>
-                    <a href="dashboard.html" class="btn btn-primary" style="margin-top: 1rem;">Kembali ke Dashboard</a>
+                    <p>${escapeHtml(message)}</p>
+                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                        <a href="manage.html" class="btn btn-primary">← Kelola Notulen</a>
+                        <a href="dashboard.html" class="btn btn-secondary">Dashboard</a>
+                    </div>
                 </div>
             `;
         }
