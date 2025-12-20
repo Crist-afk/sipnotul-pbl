@@ -16,8 +16,8 @@ $nim = mysqli_real_escape_string($conn_db_notes, $_GET['nim']);
 // 3. Syarat: Entah dia PEMBUATNYA (n.authorNim) ATAU dia PESERTANYA (a.nim)
 // 4. DISTINCT agar jika dia ada di dua tabel, notulen tidak muncul ganda
 
-$query = "SELECT DISTINCT n.* FROM tbnotesdata n 
-          LEFT JOIN tbnotesattendees a ON n.idNotes = a.idNotes 
+$query = "SELECT DISTINCT n.* FROM tbnotes_data n 
+          LEFT JOIN tbnotes_attendees a ON n.idNotes = a.idNotes 
           WHERE n.authorNim = '$nim' OR a.nim = '$nim' 
           ORDER BY n.createdAt DESC";
 

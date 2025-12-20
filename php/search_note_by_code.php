@@ -12,7 +12,7 @@ if (empty($code)) {
 
 // QUERY PENCARIAN
 // Kita cari apakah input cocok dengan 'accessCode' (4 digit) ATAU 'idNotes' (ID Panjang)
-$query = "SELECT idNotes FROM tbnotesdata WHERE accessCode = '$code' OR idNotes = '$code' LIMIT 1";
+$query = "SELECT idNotes FROM tbnotes_data WHERE accessCode = '$code' OR idNotes = '$code' LIMIT 1";
 
 $result = mysqli_query($conn_db_notes, $query);
 

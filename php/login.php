@@ -22,7 +22,7 @@ if (empty($nim) || empty($password)) {
 }
 
 // 2. CARI USER DI DATABASE
-$query = "SELECT * FROM tbUsers WHERE nim = '$nim' LIMIT 1";
+$query = "SELECT * FROM users WHERE nim = '$nim' LIMIT 1";
 $result = mysqli_query($conn_db_users, $query);
 
 if ($row = mysqli_fetch_assoc($result)) {

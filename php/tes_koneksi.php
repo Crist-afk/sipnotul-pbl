@@ -1,6 +1,6 @@
 <?php
 // tes_koneksi.php
-$conn = mysqli_connect("localhost", "root", "", "dbUsers");
+$conn = mysqli_connect("localhost", "root", "", "sipnotul");
 
 if ($conn) {
     echo "<h1>✅ Koneksi Sukses!</h1>";

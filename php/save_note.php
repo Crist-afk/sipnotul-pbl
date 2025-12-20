@@ -34,14 +34,14 @@ try {
         // Menghasilkan angka acak 0000 sampai 9999
         $accessCode = str_pad(mt_rand(0, 9999), 4, '0', STR_PAD_LEFT); 
 
-        $queryNote = "INSERT INTO tbnotesdata 
+        $queryNote = "INSERT INTO tbnotes_data 
                   (idNotes, title, content, meetingDate, time, location, decisions, followUp, authorNim, isPublic, accessCode, createdAt) 
                   VALUES 
                   ('$newId', '$title', '$content', '$meetingDate', '$time', '$location', '$decisions', '$followUp', '$authorNim', '$isPublic', '$accessCode', NOW())";
     } else {
         // --- MODE EDIT (UPDATE) ---
         // Kita TIDAK mengupdate accessCode agar kodenya tetap sama selamanya
-        $queryNote = "UPDATE tbnotesdata SET 
+        $queryNote = "UPDATE tbnotes_data SET 
                   title = '$title', content = '$content', meetingDate = '$meetingDate', 
                   time = '$time', location = '$location', decisions = '$decisions', 
                   followUp = '$followUp', isPublic = '$isPublic'
@@ -53,7 +53,7 @@ try {
     }
 
     // 2. SIMPAN DATA PESERTA (Sama seperti sebelumnya)
-    $deleteAttendees = "DELETE FROM tbnotesattendees WHERE idNotes = '$idNotes'";
+    $deleteAttendees = "DELETE FROM tbnotes_attendees WHERE idNotes = '$idNotes'";
     mysqli_query($conn_db_notes, $deleteAttendees);
 
     if (!empty($attendees)) {
@@ -64,7 +64,7 @@ try {
             // Logika Auto-Link NIM
             $finalNim = $inputNim;
             if ($inputNim == '-' || empty($inputNim)) {
-                $queryCheckUser = "SELECT nim FROM dbusers.tbusers WHERE name LIKE '$inputName' LIMIT 1";
+                $queryCheckUser = "SELECT nim FROM sipnotul.users WHERE name LIKE '$inputName' LIMIT 1";
                 $resultUser = mysqli_query($conn_db_notes, $queryCheckUser);
                 if ($resultUser && mysqli_num_rows($resultUser) > 0) {
                     $userData = mysqli_fetch_assoc($resultUser);
@@ -72,7 +72,7 @@ try {
                 }
             }
 
-            $insertAttendee = "INSERT INTO tbnotesattendees (idNotes, nim, name) VALUES ('$idNotes', '$finalNim', '$inputName')";
+            $insertAttendee = "INSERT INTO tbnotes_attendees (idNotes, nim, name) VALUES ('$idNotes', '$finalNim', '$inputName')";
             if (!mysqli_query($conn_db_notes, $insertAttendee)) {
                 throw new Exception("Gagal menyimpan peserta: " . mysqli_error($conn_db_notes));
             }

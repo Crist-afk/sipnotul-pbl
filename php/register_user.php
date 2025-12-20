@@ -30,7 +30,7 @@ if (empty($name) || empty($nim) || empty($email) || empty($password)) {
 }
 
 // 4. Cek Duplikasi NIM/Email
-$checkQuery = "SELECT id FROM tbusers WHERE nim = '$nim' OR email = '$email'";
+$checkQuery = "SELECT id FROM users WHERE nim = '$nim' OR email = '$email'";
 $checkResult = mysqli_query($conn_db_users, $checkQuery);
 
 if (!$checkResult) {
@@ -46,7 +46,7 @@ if (mysqli_num_rows($checkResult) > 0) {
 // 5. Insert ke Database (Tanpa Enkripsi sesuai request)
 // PERHATIKAN: Pastikan nama kolom (kiri) SAMA PERSIS dengan di phpMyAdmin
 // Contoh: name, nim, email, programStudi, password
-$query = "INSERT INTO tbusers (name, nim, email, programStudi, password) 
+$query = "INSERT INTO users (name, nim, email, programStudi, password) 
           VALUES ('$name', '$nim', '$email', '$programStudi', '$password')";
 
 if (mysqli_query($conn_db_users, $query)) {
