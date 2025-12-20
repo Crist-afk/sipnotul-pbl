@@ -3,7 +3,7 @@
 $servername = "localhost";
 $username = "root";     // Default XAMPP
 $password = "";         // Default XAMPP (biasanya kosong)
-$database = "dbNotes";  // Sesuai dengan file SQL yang kamu import sebelumnya
+$database = "sipnotul";  // Sesuai dengan file SQL yang kamu import sebelumnya
 
 // Membuat koneksi
 $conn_db_notes = mysqli_connect($servername, $username, $password, $database);
