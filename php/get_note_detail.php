@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 include 'conn_db_notes.php';
 
-// 1. Cek ID
+// 1. Cek ID/Code
 if (!isset($_GET['id'])) {
     echo json_encode(['status' => 'error', 'message' => 'ID tidak ditemukan']);
     exit;
@@ -10,17 +10,20 @@ if (!isset($_GET['id'])) {
 
 $id = mysqli_real_escape_string($conn_db_notes, $_GET['id']);
 
-// 2. QUERY UTAMA (PERBAIKAN NAMA DATABASE)
-// Perhatikan: "LEFT JOIN dbusers.tbusers"
-// Artinya: Ambil data notulen, lalu nyebrang ke database 'dbusers' ambil tabel 'tbusers'
+/**
+ * 2. QUERY UTAMA
+ * Perbaikan: 
+ * - Nama tabel: tbnotes_data (bukan tbnotesdata)
+ * - JOIN ke tabel: users (bukan dbusers.tbusers)
+ * - idNotes adalah Primary Key
+ */
 $query = "SELECT n.*, u.name AS authorName 
-          FROM tbnotesdata n 
-          LEFT JOIN dbusers.tbusers u ON n.authorNim = u.nim 
-          WHERE n.idNotes = '$id'";
+          FROM tbnotes_data n 
+          LEFT JOIN users u ON n.authorNim = u.nim 
+          WHERE n.idNotes = '$id' OR n.accessCode = '$id'";
 
 $result = mysqli_query($conn_db_notes, $query);
 
-// Cek jika query gagal (untuk debugging)
 if (!$result) {
     echo json_encode(['status' => 'error', 'message' => 'Query Error: ' . mysqli_error($conn_db_notes)]);
     exit;
@@ -29,9 +32,12 @@ if (!$result) {
 $noteData = mysqli_fetch_assoc($result);
 
 if ($noteData) {
-    // 3. QUERY AMBIL DATA PESERTA (tbnotesattendees)
-    // Pastikan nama tabel huruf kecil sesuai gambar
-    $queryAttendees = "SELECT nim, name FROM tbnotesattendees WHERE idNotes = '$id'";
+    /**
+     * 3. QUERY AMBIL DATA PESERTA
+     * Nama tabel: tbnotes_attendees (bukan tbnotesattendees)
+     */
+    $idNotesActual = $noteData['idNotes'];
+    $queryAttendees = "SELECT nim, name FROM tbnotes_attendees WHERE idNotes = '$idNotesActual'";
     $resAttendees = mysqli_query($conn_db_notes, $queryAttendees);
     
     $attendeesList = [];
@@ -48,4 +54,3 @@ if ($noteData) {
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Notulen tidak ditemukan']);
 }
-?>
