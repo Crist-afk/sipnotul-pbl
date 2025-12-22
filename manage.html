@@ -363,6 +363,11 @@
             font-size: 0.8rem;
         }
 
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+
         /* Empty State */
         .empty-state {
             display: none;
@@ -603,7 +608,7 @@
 
             <!-- Empty state -->
             <div id="emptyState" class="empty-state">
-                <div class="empty-state-icon">📝</div>
+                <div class="empty-state-icon">📋</div>
                 <h3>Belum ada notulen</h3>
                 <p>Anda belum membuat notulen apapun. Mulai buat notulen pertama Anda!</p>
                 <button class="btn btn-primary" id="createFirstNoteBtn">+ Buat Notulen Pertama</button>
@@ -716,11 +721,16 @@
                 emptyState.style.display = 'block';
                 return;
             }
-            
-            container.style.display = 'grid';
-            emptyState.style.display = 'none';
-            
-            container.innerHTML = notes.map(note => `
+
+            container.innerHTML = notes.map(note => {
+                // PENGECEKAN: Apakah user login sama dengan pembuat notulen?
+                // Bandingkan user.nim dengan note.authorNim
+                const isAuthor = (user.nim == note.authorNim); 
+                
+                // Jika bukan author, tambahkan class 'hidden' ke tombol hapus
+                const deleteButtonClass = isAuthor ? '' : 'hidden';
+
+                return `
                 <div class="note-card card">
                     <div class="note-header">
                         <div class="note-title">${escapeHtml(note.title)}</div>
@@ -729,18 +739,23 @@
                         </span>
                     </div>
                     <div class="note-meta">
-                        <div>📅 Dibuat: ${formatDate(note.createdAt)}</div>
-                        ${note.meetingDate ? `<div>📆 Rapat: ${formatDate(note.meetingDate)}</div>` : ''}
+                        <div>📍 Dibuat oleh: ${note.authorName || 'Seseorang'}</div>
+                        <div>📅 Tanggal: ${formatDate(note.createdAt)}</div>
+                        ${note.meetingDate ? `<div>📌 Rapat: ${formatDate(note.meetingDate)}</div>` : ''}
                         ${note.location ? `<div>📍 ${escapeHtml(note.location)}</div>` : ''}
                     </div>
                     <div class="note-content">${escapeHtml((note.content || '').substring(0, 150))}...</div>
                     <div class="note-actions">
                         <button class="btn btn-secondary btn-sm" onclick="window.location.href='viewer.html?code=${note.idNotes}'">👁️ Lihat</button>
                         <button class="btn btn-secondary btn-sm" onclick="window.location.href='editor.html?id=${note.idNotes}'">✏️ Edit</button>
-                        <button class="btn btn-danger btn-sm" onclick="handleDeleteNote('${note.idNotes}')">🗑️ Hapus</button>
+                        <button class="btn btn-danger btn-sm ${deleteButtonClass}" onclick="handleDeleteNote('${note.idNotes}')">🗑️ Hapus</button>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
+            
+            container.style.display = 'grid';
+            emptyState.style.display = 'none';
         }
 
         // ============================================

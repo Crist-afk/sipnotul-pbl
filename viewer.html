@@ -468,7 +468,7 @@
 
     <div id="toasts" class="toasts"></div>
 
-    <script type="module">
+<script type="module">
         // ============================================
         // 1. AMBIL KODE DARI URL
         // ============================================
@@ -506,9 +506,8 @@
         function renderNote(note) {
             const container = document.getElementById('noteContent');
             
-            // --- LOGIKA MENAMPILKAN PESERTA ---
+            // --- A. LOGIKA PESERTA ---
             let attendeesHtml = '';
-            
             if (note.attendeesList && note.attendeesList.length > 0) {
                 const listItems = note.attendeesList.map(person => `
                     <li class="attendee-item">
@@ -528,8 +527,31 @@
             } else {
                 attendeesHtml = '<div class="attendees-section"><p style="color: #6b7280;">Tidak ada data peserta.</p></div>';
             }
-            // ----------------------------------
 
+            // --- B. LOGIKA FILE PENDUKUNG (BARU) ---
+            let attachmentHtml = '';
+            if (note.attachment) {
+                // Ambil nama file saja untuk label (opsional)
+                const fileName = note.attachment.split('/').pop();
+                
+                attachmentHtml = `
+                    <div class="note-section">
+                        <h3>File Pendukung</h3>
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
+                            <div style="font-size: 2rem;">📄</div>
+                            <div>
+                                <div style="font-weight: 600; color: #0c4a6e; margin-bottom: 0.25rem;">Dokumen Lampiran</div>
+                                <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem;">${escapeHtml(fileName)}</div>
+                                <a href="${note.attachment}" target="_blank" class="btn btn-primary btn-sm" style="text-decoration: none;">
+                                    ⬇️ Unduh / Lihat File
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // --- C. RENDER HTML ---
             container.innerHTML = `
                 <div class="note-header">
                     <h1>${escapeHtml(note.title)}</h1>
@@ -547,8 +569,7 @@
 
                 ${attendeesHtml}
 
-                ${renderSection('Agenda', note.agenda)}
-                ${renderSection('Hasil Pembahasan', note.content)}
+                ${attachmentHtml} ${renderSection('Hasil Pembahasan', note.content)}
                 ${renderSection('Keputusan', note.decisions)}
                 ${renderSection('Tindak Lanjut', note.followUp)}
 
@@ -558,7 +579,7 @@
             `;
         }
 
-        // Helper untuk merender bagian
+        // Helper untuk merender bagian teks
         function renderSection(title, content) {
             if (!content) return '';
             return `

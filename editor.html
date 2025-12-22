@@ -118,6 +118,50 @@
             min-height: 100px;
         }
 
+        /* Date input invalid state */
+        .form-input:invalid {
+            border-color: #ef4444;
+        }
+
+        .form-input:invalid:focus {
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        /* Helper text untuk date */
+        .form-helper {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        .form-helper.error {
+            color: #dc2626;
+            font-weight: 500;
+        }
+
+        /* Date input invalid state */
+        .form-input:invalid {
+            border-color: #ef4444;
+        }
+
+        .form-input:invalid:focus {
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        /* Helper text untuk date */
+        .form-helper {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        .form-helper.error {
+            color: #dc2626;
+            font-weight: 500;
+        }
+
         .form-row {
             display: flex;
             flex-direction: column;
@@ -440,7 +484,7 @@
             </a>
             <div class="header-controls">
                 <span id="saveStatus" class="save-status">Belum disimpan</span>
-                <button class="btn btn-secondary btn-sm" id="shareBtn" title="Bagikan notulen">🔗 Bagikan</button>
+                <button class="btn btn-secondary btn-sm" id="shareBtn" title="Bagikan notulen">📤 Bagikan</button>
                 <a href="dashboard.html" class="btn btn-back btn-sm" title="Kembali ke Dashboard">← Kembali</a>
                 <button type="button" class="btn btn-primary btn-sm" id="saveBtn">💾 Simpan</button>
             </div>
@@ -467,6 +511,7 @@
                         <div class="form-group">
                             <label class="form-label" for="date">Tanggal *</label>
                             <input type="date" class="form-input" id="date" name="meetingDate" required>
+                            <span class="form-helper" id="dateHelper">Pilih tanggal hari ini atau setelahnya</span>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="time">Waktu</label>
@@ -525,9 +570,20 @@
                         <label class="form-label" for="tasks">Tindak Lanjut</label>
                         <textarea class="form-input" id="tasks" name="followUp" placeholder="Tulis rencana tindak lanjut..."></textarea>
                     </div>
+
+                    <div class="form-group" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed #d1d5db;">
+                        <label class="form-label" for="attachment">File Pendukung (Dokumen/Gambar)</label>
+                        <input type="file" class="form-input" id="attachment" name="attachment">
+                        <small style="color: #6b7280;">Maksimal 5MB. (PDF, DOCX, JPG, PNG)</small>
+                        
+                        <div id="currentFileContainer" style="display: none; margin-top: 0.5rem; background: #eff6ff; padding: 0.5rem; border-radius: 6px;">
+                            <span style="font-size: 0.9rem;">📎 File tersimpan: </span>
+                            <a href="#" target="_blank" id="currentFileLink" style="color: var(--primary); font-weight: 500;">Lihat File</a>
+                        </div>
+                    </div>
+
                 </div>
 
-                <!-- Pengaturan -->
                 <div class="form-section" style="border-bottom: none;">
                     <h3>Pengaturan</h3>
                     <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
@@ -556,6 +612,60 @@
         // VARIABLE GLOBAL: PESERTA
         // ==========================================
         let attendeesData = []; 
+
+        // ==========================================
+        // 0. SET MINIMUM DATE & VALIDATE DATE INPUT
+        // ==========================================
+        const dateInput = document.getElementById('date');
+        const dateHelper = document.getElementById('dateHelper');
+
+        // Fungsi untuk mendapatkan tanggal hari ini dalam format YYYY-MM-DD
+        function getTodayDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Set minimum date ke hari ini
+        const today = getTodayDate();
+        dateInput.min = today;
+
+        // Validasi input date saat user mengubah nilai
+        dateInput.addEventListener('change', (e) => {
+            const selectedDate = e.target.value;
+            
+            if (selectedDate && selectedDate < today) {
+                dateInput.classList.add('invalid');
+                dateHelper.classList.add('error');
+                dateHelper.textContent = '❌ Tanggal tidak boleh sebelum hari ini!';
+                dateInput.setCustomValidity('Tanggal tidak boleh sebelum hari ini');
+            } else if (selectedDate) {
+                dateInput.classList.remove('invalid');
+                dateHelper.classList.remove('error');
+                dateHelper.textContent = '✓ Tanggal valid';
+                dateInput.setCustomValidity('');
+            }
+        });
+
+        // Validasi saat input (real-time)
+        dateInput.addEventListener('input', (e) => {
+            const selectedDate = e.target.value;
+            
+            if (selectedDate && selectedDate < today) {
+                dateInput.classList.add('invalid');
+                dateHelper.classList.add('error');
+                dateHelper.textContent = '❌ Tanggal tidak boleh sebelum hari ini!';
+            } else if (selectedDate) {
+                dateInput.classList.remove('invalid');
+                dateHelper.classList.remove('error');
+                dateHelper.textContent = '✓ Tanggal valid';
+            } else {
+                dateHelper.classList.remove('error');
+                dateHelper.textContent = 'Pilih tanggal hari ini atau setelahnya';
+            }
+        });
 
         // ==========================================
         // 1. LOGIKA UI PESERTA (TAMBAH/HAPUS DI LAYAR)
@@ -636,6 +746,7 @@
 
                 if (data.status === 'success') {
                     const note = data.data;
+                    // ... kode pengisian form lainnya (title, date, dll) ...
                     document.getElementById('title').value = note.title;
                     document.getElementById('date').value = note.meetingDate;
                     document.getElementById('time').value = note.time;
@@ -645,6 +756,17 @@
                     document.getElementById('decisions').value = note.decisions;
                     document.getElementById('tasks').value = note.followUp;
                     document.getElementById('isPublic').checked = (note.isPublic == 1);
+
+                    // --- TAMBAHAN: Tampilkan Link File jika ada ---
+                    if (note.attachment) {
+                        const fileContainer = document.getElementById('currentFileContainer');
+                        const fileLink = document.getElementById('currentFileLink');
+                        
+                        fileContainer.style.display = 'block';
+                        fileLink.href = note.attachment; // Path file dari database
+                        fileLink.textContent = 'Unduh/Lihat File Pendukung';
+                    }
+                    // ----------------------------------------------
 
                     if (note.attendeesList) {
                         attendeesData = note.attendeesList;
@@ -667,8 +789,22 @@
             const statusSpan = document.getElementById('saveStatus');
             
             const title = document.getElementById('title').value;
+            const selectedDate = document.getElementById('date').value;
+
             if (!title) {
                 showToast('Judul rapat wajib diisi!', 'error');
+                return;
+            }
+
+            // Validasi tanggal
+            if (!selectedDate) {
+                showToast('Tanggal rapat wajib diisi!', 'error');
+                return;
+            }
+
+            if (selectedDate < today) {
+                showToast('❌ Tanggal tidak boleh sebelum hari ini!', 'error');
+                dateInput.classList.add('invalid');
                 return;
             }
 
