@@ -1,8 +1,8 @@
 <?php
-$host = "sql312.infinityfree.com";
-$user = "if0_40727609";
-$pass = "MbakCris123";
-$db   = "if0_40727609_sipnotul";
+$host = "localhost";
+$user = "root";
+$pass = ""; // Kosongkan jika pakai XAMPP default
+$db   = "sipnotul"; // Pastikan nama database sesuai gambar Anda (sipnotul)
 
 $conn_db_users = mysqli_connect($host, $user, $pass, $db);
 
