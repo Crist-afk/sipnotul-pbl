@@ -469,11 +469,22 @@
     <div id="toasts" class="toasts"></div>
 
 <script type="module">
+        import { getCurrentUser, showToast } from './src/auth.js';
+        
         // ============================================
-        // 1. AMBIL KODE DARI URL
+        // 1. AMBIL KODE DARI URL DAN CEK USER
         // ============================================
         const params = new URLSearchParams(window.location.search);
         const code = params.get('code');
+        
+        // Cek apakah user sudah login (opsional untuk viewer publik)
+        let currentUser = null;
+        try {
+            currentUser = getCurrentUser();
+        } catch (e) {
+            // User belum login, tetap bisa melihat notulen publik
+            console.log('User not logged in, showing public view only');
+        }
 
         if (!code) {
             showError('Kode notulen tidak valid');
@@ -505,6 +516,14 @@
         // ============================================
         function renderNote(note) {
             const container = document.getElementById('noteContent');
+            
+            // ==========================================
+            // LOGIKA ACCESS CONTROL
+            // ==========================================
+            const isOwner = currentUser && (currentUser.nim === note.authorNim);
+            
+            // Update header controls berdasarkan kepemilikan
+            updateHeaderControls(isOwner, note.idNotes);
             
             // --- A. LOGIKA PESERTA ---
             let attendeesHtml = '';
@@ -551,8 +570,16 @@
                 `;
             }
 
-            // --- C. RENDER HTML ---
+            // --- C. INDIKATOR ACCESS LEVEL ---
+            const accessIndicator = isOwner 
+                ? '<div style="background: #dcfce7; color: #166534; padding: 0.75rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; font-weight: 500;">📝 Anda adalah pemilik notulen ini dan dapat mengeditnya</div>'
+                : currentUser 
+                    ? '<div style="background: #fef3c7; color: #92400e; padding: 0.75rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; font-weight: 500;">👁️ Anda dapat melihat notulen ini dalam mode baca saja</div>'
+                    : '<div style="background: #e0e7ff; color: #3730a3; padding: 0.75rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; font-weight: 500;">🌐 Notulen publik - mode baca saja</div>';
+
+            // --- D. RENDER HTML ---
             container.innerHTML = `
+                ${accessIndicator}
                 <div class="note-header">
                     <h1>${escapeHtml(note.title)}</h1>
                     
@@ -577,6 +604,32 @@
                     <p>Dibuat oleh <strong>${escapeHtml(note.authorName || 'Tidak Diketahui')}</strong> pada ${formatDate(note.createdAt)}</p>
                 </div>
             `;
+        }
+
+        // ==========================================
+        // FUNGSI UPDATE HEADER CONTROLS
+        // ==========================================
+        function updateHeaderControls(isOwner, noteId) {
+            const headerControls = document.querySelector('.header-controls');
+            
+            // Hapus tombol edit yang mungkin sudah ada
+            const existingEditBtn = headerControls.querySelector('.edit-btn');
+            if (existingEditBtn) {
+                existingEditBtn.remove();
+            }
+            
+            // Tambahkan tombol edit jika user adalah pemilik
+            if (isOwner && noteId) {
+                const editBtn = document.createElement('a');
+                editBtn.href = `editor.html?id=${noteId}`;
+                editBtn.className = 'btn btn-primary btn-sm edit-btn';
+                editBtn.title = 'Edit notulen ini';
+                editBtn.innerHTML = '✏️ Edit';
+                
+                // Insert sebelum tombol cetak
+                const printBtn = headerControls.querySelector('button');
+                headerControls.insertBefore(editBtn, printBtn);
+            }
         }
 
         // Helper untuk merender bagian teks

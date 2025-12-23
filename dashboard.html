@@ -109,6 +109,60 @@
             margin-bottom: 1.5rem;
         }
 
+        /* 4. Access Control Visual Enhancements */
+        .note-card-owner {
+            border: 2px solid #dcfce7;
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+        }
+
+        .note-card-readonly {
+            border: 2px solid #fde68a;
+            background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+            opacity: 0.95;
+        }
+
+        .ownership-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            transition: all 0.2s ease;
+        }
+
+        .owner-badge {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            box-shadow: 0 1px 3px rgba(34, 197, 94, 0.2);
+        }
+
+        .readonly-badge {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            box-shadow: 0 1px 3px rgba(245, 158, 11, 0.2);
+        }
+
+        .edit-control, .delete-control {
+            transition: all 0.2s ease;
+        }
+
+        .edit-control:hover {
+            background: #3b82f6;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .delete-control:hover {
+            background: #dc2626;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .view-control:hover {
+            background: #6b7280;
+            color: white;
+            transform: translateY(-1px);
+        }
+
         .btn-full-mobile { width: auto; }
 
         /* ========================================= */
@@ -191,7 +245,7 @@
             </div>
 
             <div class="header-controls">
-                <button class="btn btn-primary btn-sm" id="newNoteBtn">+ Buat Notulen</button>
+                <button class="btn btn-primary btn-sm" id="newNoteBtn">+ Buat</button>
                 
                 <div class="user-menu" id="desktopUserMenu">
                     <button class="btn btn-secondary btn-sm" id="userMenuBtn">
@@ -260,7 +314,8 @@
     <div id="toasts" class="toasts"></div>
 
     <script type="module">
-        import { requireAuth, getCurrentUser, logout, showToast } from './src/auth.js';
+        import { requireAuth, getCurrentUser, logout, showToast, handleApiError, showAccessDenied } from './src/auth.js';
+        import { cacheUserOwnership, getCachedOwnership, domOptimizer, debounce } from './src/performance.js';
         
         let allNotes = [];
         let currentCalendarMonth = new Date().getMonth();
@@ -328,7 +383,7 @@
             document.getElementById('pendingTasks').textContent = pending;
         }
 
-        // 5. Render Notulen Terbaru (BUG FIX: KODE BERSIH)
+        // 5. Render Notulen Terbaru (OPTIMIZED WITH CACHING)
         function renderRecentNotes() {
             const container = document.getElementById('recentNotes');
             const recent = allNotes.slice(0, 6); // Ambil maksimal 6
@@ -338,37 +393,78 @@
                 return;
             }
 
-            container.innerHTML = recent.map(note => {
-                // Cek apakah user adalah author
-                const isAuthor = (user.nim == note.authorNim); 
+            // Use document fragment for better performance
+            const fragment = document.createDocumentFragment();
+
+            recent.forEach(note => {
+                // Check cached ownership first
+                let isAuthor = getCachedOwnership(note.idNotes);
+                if (isAuthor === null) {
+                    // Strict ownership verification - compare both nim and authorNim as strings
+                    isAuthor = (String(user.nim) === String(note.authorNim));
+                    cacheUserOwnership(note.idNotes, isAuthor);
+                }
                 
-                // Tombol Hapus hanya muncul jika author
+                // Access control: Edit and Delete buttons only for note owners
+                const editButton = isAuthor 
+                    ? `<button class="btn btn-secondary btn-sm edit-control" onclick="window.location.href='editor.html?id=${note.idNotes}'" style="flex:1;" title="Edit notulen ini">✏️ Edit</button>` 
+                    : '';
+                
                 const deleteButton = isAuthor 
-                    ? `<button class="btn btn-danger btn-sm" onclick="handleDeleteNote('${note.idNotes}')">🗑️</button>` 
+                    ? `<button class="btn btn-danger btn-sm delete-control" onclick="handleDeleteNote('${note.idNotes}')" title="Hapus notulen ini">🗑️</button>` 
                     : '';
 
-                return `
-                <div class="card" style="margin-bottom:0; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                // Visual ownership indicators with enhanced styling
+                const ownershipIndicator = isAuthor 
+                    ? '<span class="ownership-badge owner-badge" style="font-size: 0.75rem; background: #dcfce7; color: #166534; padding: 3px 8px; border-radius: 6px; font-weight: 500; border: 1px solid #bbf7d0;">📝 Milik Anda</span>'
+                    : '<span class="ownership-badge readonly-badge" style="font-size: 0.75rem; background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 6px; font-weight: 500; border: 1px solid #fde68a;">👁️ Hanya Lihat</span>';
+
+                // Additional visual distinction for read-only notes
+                const cardClass = isAuthor ? 'card note-card-owner' : 'card note-card-readonly';
+                const cardBorder = isAuthor ? '' : 'border-left: 4px solid #fbbf24;';
+
+                const cardElement = document.createElement('div');
+                cardElement.className = cardClass;
+                cardElement.style.cssText = `margin-bottom:0; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; ${cardBorder}`;
+                
+                // Show author information for better transparency
+                const authorInfo = note.authorName ? 
+                    `<span style="font-size: 0.75rem; color: #6b7280;">👤 ${escapeHtml(note.authorName)}</span>` : 
+                    `<span style="font-size: 0.75rem; color: #6b7280;">👤 ${note.authorNim}</span>`;
+                
+                cardElement.innerHTML = `
                     <div style="font-weight: 600; font-size: 1.05rem; color: #333;">
                         ${escapeHtml(note.title)}
                     </div>
-                    <div style="font-size: 0.85rem; color: #666; display: flex; justify-content: space-between;">
-                        <span>📅 ${formatDate(note.createdAt)}</span>
-                        <span style="font-size: 0.75rem; background: #eee; padding: 2px 6px; border-radius: 4px;">
-                            ${note.isPublic == 1 ? 'Publik' : 'Privat'}
-                        </span>
+                    <div style="font-size: 0.85rem; color: #666; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span>📅 ${formatDate(note.createdAt)}</span>
+                            ${authorInfo}
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                            ${ownershipIndicator}
+                            <span style="font-size: 0.75rem; background: #eee; padding: 2px 6px; border-radius: 4px;">
+                                ${note.isPublic == 1 ? 'Publik' : 'Privat'}
+                            </span>
+                        </div>
                     </div>
                     <div style="font-size: 0.9rem; color: #555; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
                         ${escapeHtml(note.content || '')}
                     </div>
-                    <div style="margin-top: auto; padding-top: 0.75rem; display: flex; gap: 0.5rem;">
-                        <button class="btn btn-secondary btn-sm" onclick="window.location.href='viewer.html?code=${note.idNotes}'" style="flex:1;">👁️ Lihat</button>
-                        <button class="btn btn-secondary btn-sm" onclick="window.location.href='editor.html?id=${note.idNotes}'" style="flex:1;">✏️ Edit</button>
+                    <div class="note-actions" style="margin-top: auto; padding-top: 0.75rem; display: flex; gap: 0.5rem; align-items: center;">
+                        <button class="btn btn-secondary btn-sm view-control" onclick="window.location.href='viewer.html?code=${note.idNotes}'" style="flex:1;" title="Lihat detail notulen">👁️ Lihat</button>
+                        ${editButton}
                         ${deleteButton}
+                        ${!isAuthor ? '<span style="font-size: 0.75rem; color: #6b7280; margin-left: auto;">🔒 Read-only</span>' : ''}
                     </div>
-                </div>
                 `;
-            }).join('');
+                
+                fragment.appendChild(cardElement);
+            });
+
+            // Single DOM update for better performance
+            container.innerHTML = '';
+            container.appendChild(fragment);
         }
 
         // 6. Render Kalender
@@ -423,21 +519,39 @@
                 return;
             }
 
-            container.innerHTML = upcoming.map(note => `
-                <div style="display: flex; gap: 1rem; padding: 1rem; background: #fff; border: 1px solid #eee; border-radius: 8px; margin-bottom: 0.5rem; align-items: center;">
-                    <div style="text-align: center; min-width: 50px; background: #eff6ff; padding: 0.5rem; border-radius: 8px;">
-                        <div style="font-size: 1.1rem; font-weight: 700; color: var(--primary);">${new Date(note.meetingDate).getDate()}</div>
-                        <div style="font-size: 0.7rem; text-transform: uppercase;">${new Date(note.meetingDate).toLocaleString('id', {month: 'short'})}</div>
-                    </div>
-                    <div style="flex:1;">
-                        <div style="font-weight: 600; color: #333;">${escapeHtml(note.title)}</div>
-                        <div style="font-size: 0.8rem; color: #666;">
-                            🕒 ${note.time || '-'} | 📍 ${note.location || '-'}
+            container.innerHTML = upcoming.map(note => {
+                // Check ownership for upcoming meetings
+                const isAuthor = (String(user.nim) === String(note.authorNim));
+                
+                // Access control indicators for upcoming meetings
+                const ownershipBadge = isAuthor 
+                    ? '<span style="font-size: 0.7rem; background: #dcfce7; color: #166534; padding: 2px 4px; border-radius: 3px; margin-left: 0.5rem;">📝 Anda</span>'
+                    : '<span style="font-size: 0.7rem; background: #fef3c7; color: #92400e; padding: 2px 4px; border-radius: 3px; margin-left: 0.5rem;">👁️ Lihat</span>';
+
+                // Show different actions based on ownership
+                const actionButton = isAuthor 
+                    ? `<button class="btn btn-secondary btn-sm" onclick="window.location.href='editor.html?id=${note.idNotes}'" title="Edit rapat ini">✏️</button>`
+                    : `<button class="btn btn-secondary btn-sm" onclick="window.location.href='viewer.html?code=${note.idNotes}'" title="Lihat detail rapat">👁️</button>`;
+
+                return `
+                    <div style="display: flex; gap: 1rem; padding: 1rem; background: #fff; border: 1px solid #eee; border-radius: 8px; margin-bottom: 0.5rem; align-items: center;">
+                        <div style="text-align: center; min-width: 50px; background: #eff6ff; padding: 0.5rem; border-radius: 8px;">
+                            <div style="font-size: 1.1rem; font-weight: 700; color: var(--primary);">${new Date(note.meetingDate).getDate()}</div>
+                            <div style="font-size: 0.7rem; text-transform: uppercase;">${new Date(note.meetingDate).toLocaleString('id', {month: 'short'})}</div>
                         </div>
+                        <div style="flex:1;">
+                            <div style="font-weight: 600; color: #333; display: flex; align-items: center; flex-wrap: wrap;">
+                                ${escapeHtml(note.title)}
+                                ${ownershipBadge}
+                            </div>
+                            <div style="font-size: 0.8rem; color: #666;">
+                                🕒 ${note.time || '-'} | 📍 ${note.location || '-'}
+                            </div>
+                        </div>
+                        ${actionButton}
                     </div>
-                    <button class="btn btn-secondary btn-sm" onclick="window.location.href='viewer.html?code=${note.idNotes}'">👁️</button>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // Utils
@@ -456,34 +570,44 @@
         window.handleDeleteNote = async (id) => {
             if (!confirm('Yakin ingin menghapus notulen ini?')) return;
             try {
-                // Masukkan logika delete_note.php yang sudah include deleterNim di sini jika diperlukan
-                // Sederhananya kita pakai request dasar dulu
                 const res = await fetch('php/delete_note.php', {
                     method: 'POST',
-                    body: JSON.stringify({ id: id, deleterNim: user.nim }), // Kirim NIM untuk keamanan
+                    body: JSON.stringify({ id: id, deleterNim: user.nim }),
                     headers: { 'Content-Type': 'application/json' }
                 });
+                
                 const result = await res.json();
+                
                 if (result.status === 'success') {
-                    showToast('Berhasil dihapus', 'success');
+                    showToast('✅ Notulen berhasil dihapus', 'success');
                     loadDashboardData();
                 } else {
-                    showToast('Gagal: ' + result.message, 'error');
+                    if (res.status === 403) {
+                        showAccessDenied('menghapus notulen ini');
+                    } else {
+                        handleApiError(new Error(result.message), res);
+                    }
                 }
-            } catch (err) { showToast('Error koneksi', 'error'); }
+            } catch (err) { 
+                handleApiError(err);
+            }
         };
 
-        // Navigation Events
-        document.getElementById('prevMonthBtn').addEventListener('click', () => {
+        // Navigation Events (OPTIMIZED WITH THROTTLING)
+        const throttledPrevMonth = debounce(() => {
             currentCalendarMonth--;
             if(currentCalendarMonth < 0) { currentCalendarMonth = 11; currentCalendarYear--; }
             renderCalendar();
-        });
-        document.getElementById('nextMonthBtn').addEventListener('click', () => {
+        }, 150);
+        
+        const throttledNextMonth = debounce(() => {
             currentCalendarMonth++;
             if(currentCalendarMonth > 11) { currentCalendarMonth = 0; currentCalendarYear++; }
             renderCalendar();
-        });
+        }, 150);
+
+        document.getElementById('prevMonthBtn').addEventListener('click', throttledPrevMonth);
+        document.getElementById('nextMonthBtn').addEventListener('click', throttledNextMonth);
 
         document.getElementById('logoutBtn').addEventListener('click', () => { if(confirm('Keluar?')) logout(); });
         if(document.getElementById('mobileLogoutBtn')) {

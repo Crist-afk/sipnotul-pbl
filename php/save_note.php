@@ -1,6 +1,7 @@
 <?php
 header('Content-Type: application/json');
 include 'conn_db_notes.php';
+include 'security_logger.php';
 
 // Debugging
 error_reporting(E_ALL);
@@ -24,6 +25,46 @@ $authorNim    = $_POST['authorNim'];
 $isPublic     = isset($_POST['isPublic']) ? 1 : 0;
 $attendeesJson = isset($_POST['attendees']) ? $_POST['attendees'] : '[]';
 $attendees     = json_decode($attendeesJson, true);
+
+// ==========================================
+// VALIDASI KEAMANAN DAN DATA
+// ==========================================
+
+// 1. Validasi tanggal - tidak boleh di masa lalu
+if (!empty($meetingDate)) {
+    $currentDate = date('Y-m-d');
+    if ($meetingDate < $currentDate) {
+        logValidationFailure('meetingDate', $authorNim, $meetingDate);
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => 'Tanggal rapat tidak boleh di masa lalu']);
+        exit;
+    }
+}
+
+// 2. Validasi kepemilikan untuk mode UPDATE
+if (!empty($idNotes)) {
+    $ownerCheckQuery = "SELECT authorNim FROM tbnotes_data WHERE idNotes = '" . mysqli_real_escape_string($conn_db_notes, $idNotes) . "'";
+    $ownerResult = mysqli_query($conn_db_notes, $ownerCheckQuery);
+    
+    if (!$ownerResult || mysqli_num_rows($ownerResult) == 0) {
+        http_response_code(404);
+        echo json_encode(['status' => 'error', 'message' => 'Notulen tidak ditemukan']);
+        exit;
+    }
+    
+    $ownerData = mysqli_fetch_assoc($ownerResult);
+    if ($ownerData['authorNim'] !== $authorNim) {
+        // Enhanced security logging
+        logUnauthorizedAccess('EDIT', $authorNim, $idNotes, $ownerData['authorNim']);
+        
+        http_response_code(403);
+        echo json_encode(['status' => 'error', 'message' => 'Anda tidak memiliki izin untuk mengedit notulen ini']);
+        exit;
+    } else {
+        // Log successful authorization
+        logSecuritySuccess('EDIT_AUTHORIZED', $authorNim, $idNotes);
+    }
+}
 
 // ==========================================
 // LOGIKA UPLOAD FILE

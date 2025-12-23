@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Control Test Runner - SIPNOTUL</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f8fafc;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .test-output {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-bottom: 2rem;
+        }
+        
+        .test-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .summary-card h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .summary-card p {
+            margin: 0;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .pass { color: #10b981; }
+        .fail { color: #ef4444; }
+        .total { color: #3b82f6; }
+        .rate { color: #8b5cf6; }
+        
+        .test-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+        
+        .category-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .category-card h3 {
+            margin: 0 0 1rem 0;
+            color: #1f2937;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+        
+        .category-card ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        
+        .category-card li {
+            margin-bottom: 0.5rem;
+            color: #4b5563;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧪 Access Control Test Suite</h1>
+        <p>Comprehensive testing for SIPNOTUL note editing access control and security features</p>
+    </div>
+
+    <div class="test-controls">
+        <button class="btn btn-primary" onclick="runAllTests()">🚀 Run All Tests</button>
+        <button class="btn btn-secondary" onclick="clearOutput()">🗑️ Clear Output</button>
+        <button class="btn btn-secondary" onclick="exportResults()">📊 Export Results</button>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Running tests...</p>
+    </div>
+
+    <div class="test-summary" id="summary" style="display: none;">
+        <div class="summary-card">
+            <h3 class="pass" id="passedCount">0</h3>
+            <p>Tests Passed</p>
+        </div>
+        <div class="summary-card">
+            <h3 class="fail" id="failedCount">0</h3>
+            <p>Tests Failed</p>
+        </div>
+        <div class="summary-card">
+            <h3 class="total" id="totalCount">0</h3>
+            <p>Total Tests</p>
+        </div>
+        <div class="summary-card">
+            <h3 class="rate" id="successRate">0%</h3>
+            <p>Success Rate</p>
+        </div>
+    </div>
+
+    <div class="test-output" id="output">
+        Click "Run All Tests" to start the test suite...
+    </div>
+
+    <div class="test-categories">
+        <div class="category-card">
+            <h3>🔐 Ownership Verification</h3>
+            <ul>
+                <li>Owner access validation</li>
+                <li>Non-owner access restriction</li>
+                <li>Unauthorized user handling</li>
+            </ul>
+        </div>
+        
+        <div class="category-card">
+            <h3>📅 Date Validation</h3>
+            <ul>
+                <li>Current date acceptance</li>
+                <li>Future date acceptance</li>
+                <li>Past date rejection</li>
+            </ul>
+        </div>
+        
+        <div class="category-card">
+            <h3>🛡️ API Security</h3>
+            <ul>
+                <li>Unauthorized edit rejection</li>
+                <li>Unauthorized delete rejection</li>
+                <li>Invalid date rejection</li>
+            </ul>
+        </div>
+        
+        <div class="category-card">
+            <h3>🎨 UI Components</h3>
+            <ul>
+                <li>Edit button visibility</li>
+                <li>Delete button visibility</li>
+                <li>Access indicators</li>
+            </ul>
+        </div>
+        
+        <div class="category-card">
+            <h3>⚡ Performance</h3>
+            <ul>
+                <li>Caching efficiency</li>
+                <li>DOM update batching</li>
+                <li>Memory management</li>
+            </ul>
+        </div>
+        
+        <div class="category-card">
+            <h3>🔒 Security Edge Cases</h3>
+            <ul>
+                <li>Empty value handling</li>
+                <li>Null value handling</li>
+                <li>Case sensitivity</li>
+            </ul>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import test suite
+        import testSuite from './access-control-tests.js';
+        
+        let testResults = [];
+        
+        // Override console.log to capture output
+        const originalLog = console.log;
+        const originalError = console.error;
+        const output = document.getElementById('output');
+        
+        function captureLog(...args) {
+            const message = args.join(' ');
+            output.textContent += message + '\n';
+            output.scrollTop = output.scrollHeight;
+            originalLog(...args);
+        }
+        
+        function captureError(...args) {
+            const message = args.join(' ');
+            output.textContent += message + '\n';
+            output.scrollTop = output.scrollHeight;
+            originalError(...args);
+        }
+        
+        // Global functions
+        window.runAllTests = async function() {
+            const loading = document.getElementById('loading');
+            const summary = document.getElementById('summary');
+            
+            // Show loading
+            loading.classList.add('active');
+            summary.style.display = 'none';
+            
+            // Clear output
+            output.textContent = '';
+            
+            // Override console
+            console.log = captureLog;
+            console.error = captureError;
+            
+            try {
+                // Run tests
+                await testSuite.runAllTests();
+                testResults = testSuite.results;
+                
+                // Update summary
+                updateSummary();
+                
+            } catch (error) {
+                captureError('Test suite failed:', error);
+            } finally {
+                // Restore console
+                console.log = originalLog;
+                console.error = originalError;
+                
+                // Hide loading
+                loading.classList.remove('active');
+                summary.style.display = 'grid';
+            }
+        };
+        
+        window.clearOutput = function() {
+            output.textContent = 'Output cleared. Click "Run All Tests" to start...';
+            document.getElementById('summary').style.display = 'none';
+        };
+        
+        window.exportResults = function() {
+            if (testResults.length === 0) {
+                alert('No test results to export. Run tests first.');
+                return;
+            }
+            
+            const results = {
+                timestamp: new Date().toISOString(),
+                summary: {
+                    total: testResults.length,
+                    passed: testResults.filter(r => r.status === 'PASS').length,
+                    failed: testResults.filter(r => r.status === 'FAIL').length
+                },
+                tests: testResults
+            };
+            
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `access-control-test-results-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+        
+        function updateSummary() {
+            const passed = testResults.filter(r => r.status === 'PASS').length;
+            const failed = testResults.filter(r => r.status === 'FAIL').length;
+            const total = testResults.length;
+            const rate = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
+            
+            document.getElementById('passedCount').textContent = passed;
+            document.getElementById('failedCount').textContent = failed;
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('successRate').textContent = rate + '%';
+        }
+        
+        // Auto-run tests if URL parameter is set
+        if (window.location.search.includes('autorun=true')) {
+            setTimeout(runAllTests, 1000);
+        }
+    </script>
+</body>
+</html>

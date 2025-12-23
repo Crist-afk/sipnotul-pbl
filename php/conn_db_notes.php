@@ -1,10 +1,10 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = ""; 
-$database = "sipnotul"; // Pastikan sesuai nama DB di gambar (sipnotul)
+$host = "sql312.infinityfree.com";
+$user = "if0_40727609";
+$pass = "MbakCris123";
+$db   = "if0_40727609_sipnotul";
 
-$conn_db_notes = mysqli_connect($servername, $username, $password, $database);
+$conn_db_notes = mysqli_connect($host, $user, $pass, $db);
 
 if (!$conn_db_notes) {
     die("Koneksi Database Gagal: " . mysqli_connect_error());

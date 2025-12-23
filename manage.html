@@ -3,103 +3,859 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar - SIPNOTUL</title>
-    <link rel="stylesheet" href="src/styles.css">
+    <title>Kelola Notulen - SIPNOTUL</title>
+    <link rel="stylesheet" href="src/styles.css?v=2">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Responsive Designn untuk Manage Page */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Header Responsive */
+        .site-header {
+            padding: 1rem;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-decoration: none;
+        }
+
+        .logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .main-nav {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .main-nav a {
+            text-decoration: none;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .main-nav a:hover {
+            color: var(--primary);
+        }
+
+        .main-nav a.active {
+            color: var(--primary);
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.25rem;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Hamburger Menu untuk Mobile */
+        .hamburger-nav {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+            display: none;
+            z-index: 100;
+            margin-top: 0.5rem;
+        }
+
+        .user-menu.open .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-menu a,
+        .dropdown-menu button {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            background: none;
+            border: none;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .dropdown-menu a:hover,
+        .dropdown-menu button:hover {
+            background: #f3f4f6;
+            color: var(--primary);
+        }
+
+        /* Main Content Responsive */
+        .container {
+            width: 100%;
+            padding: 0 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header dengan Search dan Sort */
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .notes-header h2 {
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .notes-controls {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .form-input {
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-input {
+            min-width: 180px;
+            flex: 1;
+        }
+
+        .sort-select {
+            min-width: 140px;
+        }
+
+        /* Statistics Section */
+        .stats-section {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Notes Grid */
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .note-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1.25rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .note-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .note-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+        }
+
+        .note-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-public {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-private {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .note-meta {
+            font-size: 0.8125rem;
+            color: #6b7280;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .note-content {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #333;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-danger:hover {
+            background: #fecaca;
+        }
+
+        .btn-back {
+            background: #e5e7eb;
+            color: #333;
+        }
+
+        .btn-back:hover {
+            background: #d1d5db;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: none;
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Toast Container */
+        .toasts {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            color: white;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+            max-width: 90vw;
+        }
+
+        .toast.success {
+            background-color: #10b981;
+        }
+
+        .toast.error {
+            background-color: #ef4444;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* ========================================= */
+        /* TABLET (768px - 1024px)                  */
+        /* ========================================= */
+        @media (min-width: 768px) {
+            .site-header {
+                padding: 1.5rem 2rem;
+            }
+
+            .header-inner {
+                gap: 2rem;
+            }
+
+            .logo {
+                font-size: 1.2rem;
+            }
+
+            .logo img {
+                height: 45px;
+            }
+
+            .container {
+                padding: 0 2rem;
+                padding-top: 2rem;
+                padding-bottom: 2rem;
+            }
+
+            .card {
+                padding: 2rem;
+            }
+
+            .notes-header {
+                gap: 1.5rem;
+            }
+
+            .notes-header h2 {
+                font-size: 1.75rem;
+            }
+
+            .notes-controls {
+                gap: 1.5rem;
+            }
+
+            .search-input {
+                min-width: 220px;
+            }
+
+            .sort-select {
+                min-width: 160px;
+            }
+
+            .notes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: 2rem;
+            }
+
+            .note-card {
+                padding: 1.5rem;
+            }
+        }
+
+        /* ========================================= */
+        /* DESKTOP (1024px+)                        */
+        /* ========================================= */
+        @media (min-width: 1024px) {
+            .header-inner {
+                gap: 3rem;
+            }
+
+            .container {
+                max-width: 1200px;
+            }
+
+            .notes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            }
+
+            .notes-header h2 {
+                font-size: 2rem;
+            }
+        }
+
+        /* ========================================= */
+        /* ULTRA-WIDE (1440px+)                     */
+        /* ========================================= */
+        @media (min-width: 1440px) {
+            .container {
+                max-width: 1400px;
+            }
+
+            .notes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            }
+        }
+    </style>
 </head>
-<body class="login-page">
-    <div class="login-container">
-        <div class="login-card card">
-            <div class="login-header">
-                <a href="index.html" class="logo">
-                    <img src="./assets/logo.png" alt="SIPNOTUL Logo" height="32">
+<body>
+    <!-- 
+        ============================================
+        SITE HEADER
+        ============================================
+    -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <div class="header-left">
+                <a href="index.html" class="logo" style="color: var(--primary);">
+                    <img src="./assets/logo.png" alt="SIPNOTUL Logo">
                     <span>SIPNOTUL</span>
                 </a>
-                <h1>Daftar Akun Baru</h1>
-                <p class="login-subtitle">Buat akun untuk mulai menggunakan SIPNOTUL</p>
+                <nav class="main-nav">
+                    <a href="dashboard.html">Dashboard</a>
+                    <a href="manage.html" class="active">Kelola Notulen</a>
+                </nav>
             </div>
-
-            <form id="registerForm" class="login-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="firstName">Nama Depan</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="firstName" class="input" placeholder="Nama depan" required>
-                            <span class="input-icon">👤</span>
-                        </div>
-                        <div class="error-message" id="firstNameError"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="lastName">Nama Belakang</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="lastName" class="input" placeholder="Nama belakang" required>
-                            <span class="input-icon">👤</span>
-                        </div>
-                        <div class="error-message" id="lastNameError"></div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <div class="input-wrapper">
-                        <input type="email" id="email" class="input" placeholder="nama@email.com" required>
-                        <span class="input-icon">📧</span>
-                    </div>
-                    <div class="error-message" id="emailError"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="password">Kata Sandi</label>
-                    <div class="input-wrapper">
-                        <input type="password" id="password" class="input" placeholder="Minimal 8 karakter" required>
-                        <span class="input-icon toggle-password">👁️</span>
-                    </div>
-                    <div class="error-message" id="passwordError"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="confirmPassword">Konfirmasi Kata Sandi</label>
-                    <div class="input-wrapper">
-                        <input type="password" id="confirmPassword" class="input" placeholder="Ulangi kata sandi" required>
-                        <span class="input-icon toggle-password">👁️</span>
-                    </div>
-                    <div class="error-message" id="confirmPasswordError"></div>
-                </div>
-
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="terms" required>
-                        <span class="checkmark"></span>
-                        Saya setuju dengan <a href="#" class="text-primary">Syarat & Ketentuan</a>
-                    </label>
-                    <div class="error-message" id="termsError"></div>
-                </div>
-
-                <button type="submit" class="btn primary w-full" id="registerBtn">
-                    <span class="btn-text">Daftar</span>
-                    <span class="btn-loading" style="display: none;">⏳</span>
+            <div class="header-controls">
+                <button class="btn btn-back btn-sm" id="backBtn" title="Kembali ke Dashboard">
+                    ← Kembali
                 </button>
-
-                <div class="divider">
-                    <span>atau</span>
+                <button class="btn btn-primary btn-sm" id="newNoteBtn">+ Buat Notulen</button>
+                <div class="user-menu">
+                    <button class="btn btn-secondary btn-sm" id="userMenuBtn">
+                        <span id="userName">User</span>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="account.html">⚙️ Pengaturan</a>
+                        <button id="logoutBtn">🚪 Keluar</button>
+                    </div>
                 </div>
-
-                <button type="button" class="btn ghost w-full" id="googleRegister">
-                    <span class="btn-icon">🔵</span>
-                    Daftar dengan Google
-                </button>
-            </form>
-
-            <div class="login-footer">
-                <p>Sudah punya akun? <a href="login.html" class="text-primary">Masuk sekarang</a></p>
             </div>
         </div>
+    </header>
+
+    <!-- 
+        ============================================
+        MAIN CONTENT
+        ============================================
+        Note management with search and sort
+    -->
+    <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+        <div class="card">
+            <!-- Header dengan search dan sort -->
+            <div class="notes-header">
+                <h2>Kelola Notulen Saya</h2>
+                <div class="notes-controls">
+                    <!-- Search input -->
+                    <input type="text" class="form-input search-input" id="searchInput" placeholder="🔍 Cari notulen...">
+                    <!-- Sort dropdown -->
+                    <select class="form-input sort-select" id="sortSelect">
+                        <option value="newest">Terbaru</option>
+                        <option value="oldest">Terlama</option>
+                        <option value="title">Judul A-Z</option>
+                        <option value="meeting">Tanggal Rapat</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-section">
+                <div class="stat-item">
+                    <span class="stat-label">Total Notulen:</span>
+                    <span class="stat-value" id="totalNotes">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Publik:</span>
+                    <span class="stat-value" style="color: var(--success);" id="publicNotes">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Privat:</span>
+                    <span class="stat-value" style="color: #6b7280;" id="privateNotes">0</span>
+                </div>
+            </div>
+
+            <!-- Notes grid -->
+            <div id="notesContainer" class="notes-grid">
+                <!-- Notes will be inserted here -->
+            </div>
+
+            <!-- Empty state -->
+            <div id="emptyState" class="empty-state">
+                <div class="empty-state-icon">📝</div>
+                <h3>Belum ada notulen</h3>
+                <p>Anda belum membuat notulen apapun. Mulai buat notulen pertama Anda!</p>
+                <button class="btn btn-primary" id="createFirstNoteBtn">+ Buat Notulen Pertama</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast container -->
+    <div id="toasts" class="toasts"></div>
+
+    <!-- 
+        ============================================
+        JAVASCRIPT
+        ============================================
+    -->
+ <script type="module">
+        import { requireAuth, getCurrentUser, logout, showToast } from './src/auth.js';
+        
+        let dbNotes = [];
+        let searchQuery = '';
+        let currentSort = 'newest';
+
+        // ============================================
+        // CHECK AUTH & INIT
+        // ============================================
+        if (!requireAuth()) { /* Redirect handled */ }
+
+        const user = getCurrentUser();
+        console.log('[MANAGE] User:', user.name);
+        document.getElementById('userName').textContent = user.name;
+
+        // LOAD DATA PERTAMA KALI
+        loadNotesFromDB();
+
+        // ============================================
+        // 1. AMBIL DATA DARI SERVER (PHP)
+        // ============================================
+        async function loadNotesFromDB() {
+            try {
+                const response = await fetch(`php/get_user_notes.php?nim=${user.nim || user.id}`);
+                const data = await response.json();
+                
+                dbNotes = data;
+                updateStats();
+                renderNotes();
+                
+                console.log('[MANAGE] Notes loaded:', dbNotes.length);
+            } catch (error) {
+                console.error('Error loading notes:', error);
+                showToast('Gagal memuat data dari database', 'error');
+            }
+        }
+
+        // ============================================
+        // 2. UPDATE STATISTICS
+        // ============================================
+        function updateStats() {
+            const publicCount = dbNotes.filter(n => n.isPublic == 1).length;
+            
+            document.getElementById('totalNotes').textContent = dbNotes.length;
+            document.getElementById('publicNotes').textContent = publicCount;
+            document.getElementById('privateNotes').textContent = dbNotes.length - publicCount;
+        }
+
+        // ============================================
+        // 3. FILTER & SORT LOGIC
+        // ============================================
+        function getFilteredNotes() {
+            let notes = [...dbNotes]; 
+            
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                notes = notes.filter(n => 
+                    n.title.toLowerCase().includes(query) ||
+                    (n.content || '').toLowerCase().includes(query) ||
+                    (n.location || '').toLowerCase().includes(query)
+                );
+            }
+            
+            notes.sort((a, b) => {
+                switch (currentSort) {
+                    case 'newest':
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    case 'oldest':
+                        return new Date(a.createdAt) - new Date(b.createdAt);
+                    case 'title':
+                        return a.title.localeCompare(b.title);
+                    case 'meeting':
+                        if (!a.meetingDate) return 1;
+                        if (!b.meetingDate) return -1;
+                        return new Date(a.meetingDate) - new Date(b.meetingDate);
+                    default:
+                        return 0;
+                }
+            });
+            
+            return notes;
+        }
+
+        // ============================================
+        // 4. RENDER (TAMPILKAN KE LAYAR)
+        // ============================================
+        function renderNotes() {
+            const notes = getFilteredNotes();
+            const container = document.getElementById('notesContainer');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (notes.length === 0) {
+                container.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+
+            // ... di dalam function renderNotes() ...
+
+container.innerHTML = notes.map(note => {
+    // LOGIKA PENGECEKAN: Apakah user login sama dengan pembuat notulen?
+    // Pastikan user.nim sesuai dengan data login Anda
+    const isAuthor = (user.nim == note.authorNim); 
+    
+    // Jika author, tampilkan tombol hapus. Jika bukan, string kosong.
+    const deleteButton = isAuthor 
+        ? `<button class="btn btn-danger btn-sm" onclick="handleDeleteNote('${note.idNotes}')">🗑️ Hapus</button>` 
+        : '';
+
+    return `
+    <div class="note-card card">
+        <div class="note-header">
+            <div class="note-title">${escapeHtml(note.title)}</div>
+            <span class="note-badge ${note.isPublic == 1 ? 'badge-public' : 'badge-private'}">
+                ${note.isPublic == 1 ? '🌐 Publik' : '🔒 Privat'}
+            </span>
+        </div>
+        <div class="note-meta">
+            <div>👤 Dibuat oleh: ${note.authorName || 'Seseorang'}</div>
+            <div>📅 Tanggal: ${formatDate(note.createdAt)}</div>
+        </div>
+        <div class="note-content">${escapeHtml((note.content || '').substring(0, 150))}...</div>
+        <div class="note-actions">
+            <button class="btn btn-secondary btn-sm" onclick="window.location.href='viewer.html?code=${note.idNotes}'">👁️ Lihat</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.location.href='editor.html?id=${note.idNotes}'">✏️ Edit</button>
+            
+            ${deleteButton}
+        </div>
     </div>
+    `;
+}).join('');
+            }
+            
+            container.style.display = 'grid';
+            emptyState.style.display = 'none';
+            
+            container.innerHTML = notes.map(note => `
+                <div class="note-card card">
+                    <div class="note-header">
+                        <div class="note-title">${escapeHtml(note.title)}</div>
+                        <span class="note-badge ${note.isPublic == 1 ? 'badge-public' : 'badge-private'}">
+                            ${note.isPublic == 1 ? '🌐 Publik' : '🔒 Privat'}
+                        </span>
+                    </div>
+                    <div class="note-meta">
+                        <div>📅 Dibuat: ${formatDate(note.createdAt)}</div>
+                        ${note.meetingDate ? `<div>📆 Rapat: ${formatDate(note.meetingDate)}</div>` : ''}
+                        ${note.location ? `<div>📍 ${escapeHtml(note.location)}</div>` : ''}
+                    </div>
+                    <div class="note-content">${escapeHtml((note.content || '').substring(0, 150))}...</div>
+                    <div class="note-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="window.location.href='viewer.html?code=${note.idNotes}'">👁️ Lihat</button>
+                        <button class="btn btn-secondary btn-sm" onclick="window.location.href='editor.html?id=${note.idNotes}'">✏️ Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="handleDeleteNote('${note.idNotes}')">🗑️ Hapus</button>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-    <div id="toasts" class="toasts" aria-live="assertive"></div>
+        // ============================================
+        // UTILS
+        // ============================================
+        function escapeHtml(text) {
+            if (!text) return "";
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('id-ID', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+        }
 
-    <script type="module" src="src/auth.js"></script>
-    <script type="module" src="src/register.js"></script>
+        // ============================================
+        // ACTION HANDLERS
+        // ============================================
+        
+        window.handleDeleteNote = async (id) => {
+            if (confirm('Apakah Anda yakin ingin menghapus notulen ini? Permanen.')) {
+                try {
+                    const res = await fetch('php/delete_note.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: id })
+                    });
+                    const result = await res.json();
+                    
+                    if(result.status === 'success') {
+                        showToast('Notulen berhasil dihapus', 'success');
+                        loadNotesFromDB();
+                    } else {
+                        showToast('Gagal menghapus: ' + result.message, 'error');
+                    }
+                } catch (err) {
+                    showToast('Error koneksi database', 'error');
+                }
+            }
+        };
+
+        // Event Listeners UI
+        document.getElementById('backBtn').addEventListener('click', () => {
+            window.location.href = 'dashboard.html';
+        });
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchQuery = e.target.value.trim();
+            renderNotes();
+        });
+        
+        document.getElementById('sortSelect').addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            renderNotes();
+        });
+        
+        document.getElementById('newNoteBtn').addEventListener('click', () => {
+            window.location.href = 'editor.html';
+        });
+
+        document.getElementById('createFirstNoteBtn').addEventListener('click', () => {
+            window.location.href = 'editor.html';
+        });
+        
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            if (confirm('Anda yakin ingin keluar?')) logout();
+        });
+
+        // User menu dropdown
+        document.getElementById('userMenuBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelector('.user-menu').classList.toggle('open');
+        });
+        document.addEventListener('click', () => {
+            document.querySelector('.user-menu').classList.remove('open');
+        });
+
+    </script>
 </body>
 </html>

@@ -135,50 +135,147 @@ export function requireAuth() {
 }
 
 /**
- * Show toast notification
+ * Show toast notification with enhanced styling
  */
 export function showToast(message, type = 'info') {
     const container = document.getElementById('toasts');
     if (!container) return;
     
     const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
+    toast.className = `toast ${type}`;
     toast.textContent = message;
     
-    // Style manual untuk memastikan toast terlihat jika CSS belum load
-    toast.style.padding = '12px 20px';
-    toast.style.marginTop = '10px';
-    toast.style.borderRadius = '5px';
-    toast.style.color = '#fff';
-    toast.style.fontFamily = "'Orbitron', sans-serif";
-    toast.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
-    toast.style.transition = 'opacity 0.3s ease';
-    toast.style.opacity = '0';
+    // Enhanced styling for better visibility
+    toast.style.cssText = `
+        padding: 12px 20px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        opacity: 0;
+        transform: translateX(100%);
+        max-width: 400px;
+        word-wrap: break-word;
+        z-index: 1000;
+        position: relative;
+    `;
 
-    if(type === 'success') {
-        toast.style.background = '#001a33';
-        toast.style.border = '1px solid #00f3ff';
-        toast.style.boxShadow = '0 0 10px #00f3ff';
-    } else if (type === 'error') {
-        toast.style.background = '#001a33';
-        toast.style.border = '1px solid #ff0055';
-        toast.style.boxShadow = '0 0 10px #ff0055';
-    } else {
-        toast.style.background = '#333';
+    // Type-specific styling
+    switch(type) {
+        case 'success':
+            toast.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            break;
+        case 'error':
+            toast.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            break;
+        case 'warning':
+            toast.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            break;
+        case 'info':
+        default:
+            toast.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+            break;
     }
     
     container.appendChild(toast);
     
-    // Animasi Fade In
+    // Slide in animation
     requestAnimationFrame(() => {
         toast.style.opacity = '1';
+        toast.style.transform = 'translateX(0)';
     });
     
-    // Animasi Fade Out
+    // Auto remove after 4 seconds
     setTimeout(() => {
         toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
         setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    }, 4000);
 }
 
-export default { login, logout, getCurrentUser, isLoggedIn, requireAuth, register, showToast };     
+/**
+ * Handle API errors with user-friendly messages
+ */
+export function handleApiError(error, response = null) {
+    console.error('[API Error]', error);
+    
+    let message = 'Terjadi kesalahan sistem';
+    
+    if (response) {
+        switch(response.status) {
+            case 400:
+                message = 'Data yang dikirim tidak valid';
+                break;
+            case 401:
+                message = 'Sesi Anda telah berakhir. Silakan login kembali';
+                logout();
+                return;
+            case 403:
+                message = 'Anda tidak memiliki izin untuk melakukan tindakan ini';
+                break;
+            case 404:
+                message = 'Data yang dicari tidak ditemukan';
+                break;
+            case 500:
+                message = 'Terjadi kesalahan server. Coba lagi nanti';
+                break;
+            default:
+                if (error.message) {
+                    message = error.message;
+                }
+        }
+    } else if (error.message) {
+        if (error.message.includes('Failed to fetch')) {
+            message = 'Koneksi terputus. Periksa internet Anda';
+        } else {
+            message = error.message;
+        }
+    }
+    
+    showToast(message, 'error');
+}
+
+/**
+ * Show access denied message
+ */
+export function showAccessDenied(action = 'melakukan tindakan ini') {
+    showToast(`❌ Anda tidak memiliki izin untuk ${action}`, 'error');
+}
+
+/**
+ * Show validation error
+ */
+export function showValidationError(field, message) {
+    showToast(`❌ ${field}: ${message}`, 'warning');
+}
+
+/**
+ * Show success message for common actions
+ */
+export function showSuccessMessage(action) {
+    const messages = {
+        'save': '✅ Data berhasil disimpan',
+        'delete': '✅ Data berhasil dihapus',
+        'update': '✅ Data berhasil diperbarui',
+        'create': '✅ Data berhasil dibuat'
+    };
+    
+    showToast(messages[action] || `✅ ${action} berhasil`, 'success');
+}
+
+export default { 
+    login, 
+    logout, 
+    getCurrentUser, 
+    isLoggedIn, 
+    requireAuth, 
+    register, 
+    showToast, 
+    handleApiError, 
+    showAccessDenied, 
+    showValidationError, 
+    showSuccessMessage 
+};     

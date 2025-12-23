@@ -598,7 +598,7 @@
     <div id="toasts" class="toasts"></div>
 
     <script type="module">
-        import { requireAuth, getCurrentUser, showToast } from './src/auth.js';
+        import { requireAuth, getCurrentUser, showToast, handleApiError, showAccessDenied, showValidationError } from './src/auth.js';
         
         // Cek Login
         if (!requireAuth()) {
@@ -746,7 +746,22 @@
 
                 if (data.status === 'success') {
                     const note = data.data;
-                    // ... kode pengisian form lainnya (title, date, dll) ...
+                    
+                    // ==========================================
+                    // VERIFIKASI KEPEMILIKAN NOTULEN
+                    // ==========================================
+                    const isOwner = (user.nim === note.authorNim);
+                    
+                    if (!isOwner) {
+                        // Jika bukan pemilik, redirect ke viewer dengan pesan
+                        showAccessDenied('mengedit notulen ini');
+                        setTimeout(() => {
+                            window.location.href = `viewer.html?code=${id}`;
+                        }, 2000);
+                        return;
+                    }
+                    
+                    // Jika pemilik, lanjutkan mengisi form
                     document.getElementById('title').value = note.title;
                     document.getElementById('date').value = note.meetingDate;
                     document.getElementById('time').value = note.time;
@@ -774,6 +789,10 @@
                     }
                 } else {
                     showToast('Gagal memuat data notulen: ' + data.message, 'error');
+                    // Redirect ke dashboard jika notulen tidak ditemukan
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -791,20 +810,23 @@
             const title = document.getElementById('title').value;
             const selectedDate = document.getElementById('date').value;
 
-            if (!title) {
-                showToast('Judul rapat wajib diisi!', 'error');
+            // Enhanced validation with better error messages
+            if (!title.trim()) {
+                showValidationError('Judul rapat', 'wajib diisi');
+                document.getElementById('title').focus();
                 return;
             }
 
-            // Validasi tanggal
             if (!selectedDate) {
-                showToast('Tanggal rapat wajib diisi!', 'error');
+                showValidationError('Tanggal rapat', 'wajib diisi');
+                document.getElementById('date').focus();
                 return;
             }
 
             if (selectedDate < today) {
-                showToast('❌ Tanggal tidak boleh sebelum hari ini!', 'error');
+                showValidationError('Tanggal rapat', 'tidak boleh di masa lalu');
                 dateInput.classList.add('invalid');
+                dateInput.focus();
                 return;
             }
 
@@ -840,12 +862,23 @@
                         }, 1500);
                     }
                 } else {
-                    throw new Error(result.message);
+                    // Handle specific error cases with enhanced messages
+                    if (response.status === 403) {
+                        showAccessDenied('mengedit notulen ini');
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 2000);
+                    } else if (response.status === 400 && result.message.includes('masa lalu')) {
+                        showValidationError('Tanggal rapat', 'tidak boleh di masa lalu');
+                        dateInput.focus();
+                    } else {
+                        handleApiError(new Error(result.message), response);
+                    }
                 }
 
             } catch (error) {
                 console.error('Error:', error);
-                showToast('Gagal menyimpan: ' + error.message, 'error');
+                handleApiError(error);
                 statusSpan.textContent = 'Gagal menyimpan';
             } finally {
                 saveBtn.disabled = false;
