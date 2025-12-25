@@ -5,50 +5,50 @@
 
 // Data fitur SIPNOTUL (telah dihapus "Notifikasi & Pengingat")
 const features = [
-    {
+{
         icon: "📝",
-        title: "Pencatatan Notulen Real-time",
-        description: "Catat hasil rapat secara langsung dengan editor yang responsif dan otomatis tersimpan."
+        title: "Pencatatan Notulen Tepat Waktu",
+        description: "Catat hasil rapat secara langsung dengan penyunting yang tanggap dan fitur simpan otomatis."
     },
     {
         icon: "🔗",
         title: "Bagikan dengan Kode Unik",
-        description: "Setiap notulen memiliki kode 4-digit yang dapat dibagikan kepada peserta rapat."
+        description: "Setiap notulen memiliki kode 4-digit khusus yang dapat dibagikan kepada seluruh peserta rapat."
     },
     {
         icon: "👥",
         title: "Kolaborasi Tim",
-        description: "Bekerja sama dengan tim dalam satu notulen secara bersamaan."
+        description: "Bekerja sama dengan rekan setim dalam satu dokumen notulen secara bersamaan."
     },
     {
         icon: "📊",
-        title: "Analisis Rapat",
-        description: "Dapatkan insight dari setiap rapat dengan statistik dan ringkasan otomatis."
+        title: "Mengamati Rapat",
+        description: "Pantau jalannya setiap rapat dengan mudah dan dapatkan ringkasan otomatis secara instan."
     },
     {
         icon: "📱",
-        title: "Responsif di Semua Device",
-        description: "Akses SIPNOTUL dari komputer, tablet, atau smartphone Anda."
+        title: "Responsif di Semua Perangkat",
+        description: "Akses SIPNOTUL dengan nyaman melalui komputer, tablet, maupun ponsel pintar Anda."
     },
     {
         icon: "📁",
         title: "Arsip Otomatis",
-        description: "Notulen otomatis diarsipkan dan dapat dicari berdasarkan tanggal, topik, atau peserta."
+        description: "Notulen tersimpan secara otomatis dan dapat dicari berdasarkan tanggal, topik, atau peserta."
     },
     {
         icon: "📈",
-        title: "Dashboard Interaktif",
-        description: "Pantau semua aktivitas rapat dalam satu dashboard yang informatif."
+        title: "Papan Pandu Interaktif",
+        description: "Pantau seluruh aktivitas rapat dalam satu dasbor yang informatif dan terpadu."
     },
     {
         icon: "🎯",
-        title: "Template yang Dapat Disesuaikan",
-        description: "Gunakan template yang sudah ada atau buat template notulen Anda sendiri."
+        title: "Templat yang Dapat Disesuaikan",
+        description: "Gunakan templat yang tersedia atau buat format notulen Anda sendiri sesuai kebutuhan."
     },
     {
         icon: "🔍",
         title: "Pencarian Cerdas",
-        description: "Temukan notulen dengan cepat menggunakan fitur pencarian yang powerful."
+        description: "Temukan dokumen notulen dengan cepat menggunakan fitur pencarian yang canggih."
     }
 ];
 
