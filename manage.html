@@ -591,7 +591,7 @@
                     <span class="stat-value" style="color: var(--success);" id="publicNotes">0</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Privat:</span>
+                    <span class="stat-label">Pribadi:</span>
                     <span class="stat-value" style="color: #6b7280;" id="privateNotes">0</span>
                 </div>
             </div>
@@ -733,7 +733,7 @@ container.innerHTML = notes.map(note => {
         <div class="note-header">
             <div class="note-title">${escapeHtml(note.title)}</div>
             <span class="note-badge ${note.isPublic == 1 ? 'badge-public' : 'badge-private'}">
-                ${note.isPublic == 1 ? '🌐 Publik' : '🔒 Privat'}
+                ${note.isPublic == 1 ? '🌐 Publik' : '🔒 Pribadi'}
             </span>
         </div>
         <div class="note-meta">
@@ -760,7 +760,7 @@ container.innerHTML = notes.map(note => {
                     <div class="note-header">
                         <div class="note-title">${escapeHtml(note.title)}</div>
                         <span class="note-badge ${note.isPublic == 1 ? 'badge-public' : 'badge-private'}">
-                            ${note.isPublic == 1 ? '🌐 Publik' : '🔒 Privat'}
+                            ${note.isPublic == 1 ? '🌐 Publik' : '🔒 Pribadi'}
                         </span>
                     </div>
                     <div class="note-meta">
