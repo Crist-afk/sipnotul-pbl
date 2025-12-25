@@ -33,7 +33,7 @@ const features = [
     {
         icon: "📁",
         title: "Arsip Otomatis",
-        description: "Notulen tersimpan secaaara otomatis dan dapat dicari berdasarkan tanggal, topik, atau peserta."
+        description: "Notulen tersimpan secara otomatis dan dapat dicari berdasarkan tanggal, topik, atau peserta."
     },
     {
         icon: "📈",
