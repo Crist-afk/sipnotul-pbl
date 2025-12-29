@@ -568,30 +568,46 @@
 
         // Global Event Handlers
         window.handleDeleteNote = async (id) => {
-            if (!confirm('Yakin ingin menghapus notulen ini?')) return;
-            try {
-                const res = await fetch('php/delete_note.php', {
-                    method: 'POST',
-                    body: JSON.stringify({ id: id, deleterNim: user.nim }),
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const result = await res.json();
-                
-                if (result.status === 'success') {
-                    showToast('✅ Notulen berhasil dihapus', 'success');
-                    loadDashboardData();
+        // 1. Ambil data user saat ini untuk memastikan NIM valid
+        const currentUser = getCurrentUser();
+        const userNim = currentUser.nim || currentUser.id;
+
+        if (!userNim) {
+            showToast('Gagal: Identitas pengguna tidak ditemukan. Coba login ulang.', 'error');
+            return;
+        }
+
+        if (!confirm('Yakin ingin menghapus notulen ini?')) return;
+        
+        try {
+            const res = await fetch('php/delete_note.php', {
+                method: 'POST',
+                // PERBAIKAN DI SINI: Mengubah 'deleterNim' menjadi 'nim' 
+                // agar sesuai dengan php/delete_note.php
+                body: JSON.stringify({ 
+                    id: id, 
+                    nim: userNim 
+                }),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            const result = await res.json();
+            
+            if (result.status === 'success') {
+                showToast('✅ Notulen berhasil dihapus', 'success');
+                // Refresh data dashboard setelah menghapus
+                loadDashboardData();
+            } else {
+                if (res.status === 403) {
+                    showAccessDenied('menghapus notulen ini');
                 } else {
-                    if (res.status === 403) {
-                        showAccessDenied('menghapus notulen ini');
-                    } else {
-                        handleApiError(new Error(result.message), res);
-                    }
+                    handleApiError(new Error(result.message), res);
                 }
-            } catch (err) { 
-                handleApiError(err);
             }
-        };
+        } catch (err) { 
+            handleApiError(err);
+        }
+    };
 
         // Navigation Events (OPTIMIZED WITH THROTTLING)
         const throttledPrevMonth = debounce(() => {

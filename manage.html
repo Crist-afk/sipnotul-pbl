@@ -798,27 +798,49 @@ container.innerHTML = notes.map(note => {
         // ACTION HANDLERS
         // ============================================
         
-        window.handleDeleteNote = async (id) => {
-            if (confirm('Apakah Anda yakin ingin menghapus notulen ini? Permanen.')) {
-                try {
-                    const res = await fetch('php/delete_note.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: id })
-                    });
-                    const result = await res.json();
-                    
-                    if(result.status === 'success') {
-                        showToast('Notulen berhasil dihapus', 'success');
-                        loadNotesFromDB();
-                    } else {
-                        showToast('Gagal menghapus: ' + result.message, 'error');
-                    }
-                } catch (err) {
-                    showToast('Error koneksi database', 'error');
-                }
+// GANTI function window.handleDeleteNote dengan ini:
+
+window.handleDeleteNote = async (id) => {
+    // 1. Ambil data user terbaru saat tombol ditekan
+    const currentUser = getCurrentUser();
+    
+    // 2. Pastikan NIM tersedia (Cek properti 'nim' atau 'id')
+    const userNim = currentUser.nim || currentUser.id;
+
+    // DEBUG: Cek apakah NIM terbaca
+    if (!userNim) {
+        alert("Error: Identitas user (NIM) tidak ditemukan. Silakan login ulang.");
+        console.error("User Object:", currentUser); // Lihat di Console (F12) untuk debug
+        return;
+    }
+
+    if (confirm('Apakah Anda yakin ingin menghapus notulen ini? Permanen.')) {
+        try {
+            console.log("Mengirim data hapus:", { id: id, nim: userNim }); // Debug log
+
+            const res = await fetch('php/delete_note.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    id: id, 
+                    nim: userNim  // Pastikan variabel ini terisi
+                })
+            });
+
+            const result = await res.json();
+            
+            if(result.status === 'success') {
+                showToast('Notulen berhasil dihapus', 'success');
+                loadNotesFromDB(); // Refresh daftar
+            } else {
+                showToast('Gagal menghapus: ' + result.message, 'error');
             }
-        };
+        } catch (err) {
+            console.error("Fetch Error:", err);
+            showToast('Error koneksi database', 'error');
+        }
+    }
+};
 
         // Event Listeners UI
         document.getElementById('backBtn').addEventListener('click', () => {
