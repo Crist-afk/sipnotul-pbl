@@ -569,7 +569,7 @@
                 <h2>Kelola Notulen Saya</h2>
                 <div class="notes-controls">
                     <!-- Search input -->
-                    <input type="text" class="form-input search-input" id="searchInput" placeholder="🔍 Cari notulen...">
+                    <input type="text" class="form-input search-input" id="searchInput" placeholder="🔍 Cari notulen saya...">
                     <!-- Sort dropdown -->
                     <select class="form-input sort-select" id="sortSelect">
                         <option value="newest">Terbaru</option>
@@ -583,7 +583,7 @@
             <!-- Statistics -->
             <div class="stats-section">
                 <div class="stat-item">
-                    <span class="stat-label">Total Notulen:</span>
+                    <span class="stat-label">Notulen Saya:</span>
                     <span class="stat-value" id="totalNotes">0</span>
                 </div>
                 <div class="stat-item">
@@ -605,7 +605,7 @@
             <div id="emptyState" class="empty-state">
                 <div class="empty-state-icon">📝</div>
                 <h3>Belum ada notulen</h3>
-                <p>Anda belum membuat notulen apapun. Mulai buat notulen pertama Anda!</p>
+                <p>Anda belum membuat notulen apapun. Mulai buat notulen pertama Anda sekarang!</p>
                 <button class="btn btn-primary" id="createFirstNoteBtn">+ Buat Notulen Pertama</button>
             </div>
         </div>
@@ -620,7 +620,7 @@
         ============================================
     -->
  <script type="module">
-        import { requireAuth, getCurrentUser, logout, showToast } from './src/auth.js';
+        import { requireAuth, getCurrentUser, logout, showToast, handleApiError, showAccessDenied } from './src/auth.js';
         
         let dbNotes = [];
         let searchQuery = '';
@@ -639,18 +639,19 @@
         loadNotesFromDB();
 
         // ============================================
-        // 1. AMBIL DATA DARI SERVER (PHP)
+        // 1. AMBIL DATA DARI SERVER (PHP) - HANYA MILIK USER
         // ============================================
         async function loadNotesFromDB() {
             try {
-                const response = await fetch(`php/get_user_notes.php?nim=${user.nim || user.id}`);
+                // Gunakan endpoint khusus yang hanya mengembalikan notulen milik user
+                const response = await fetch(`php/get_my_notes.php?nim=${user.nim || user.id}`);
                 const data = await response.json();
                 
                 dbNotes = data;
                 updateStats();
                 renderNotes();
                 
-                console.log('[MANAGE] Notes loaded:', dbNotes.length);
+                console.log('[MANAGE] My notes loaded:', dbNotes.length);
             } catch (error) {
                 console.error('Error loading notes:', error);
                 showToast('Gagal memuat data dari database', 'error');
@@ -704,7 +705,7 @@
         }
 
         // ============================================
-        // 4. RENDER (TAMPILKAN KE LAYAR)
+        // 4. RENDER (TAMPILKAN KE LAYAR) - SEMUA NOTES MILIK USER
         // ============================================
         function renderNotes() {
             const notes = getFilteredNotes();
@@ -715,46 +716,12 @@
                 container.style.display = 'none';
                 emptyState.style.display = 'block';
                 return;
-
-            // ... di dalam function renderNotes() ...
-
-container.innerHTML = notes.map(note => {
-    // LOGIKA PENGECEKAN: Apakah user login sama dengan pembuat notulen?
-    // Pastikan user.nim sesuai dengan data login Anda
-    const isAuthor = (user.nim == note.authorNim); 
-    
-    // Jika author, tampilkan tombol hapus. Jika bukan, string kosong.
-    const deleteButton = isAuthor 
-        ? `<button class="btn btn-danger btn-sm" onclick="handleDeleteNote('${note.idNotes}')">🗑️ Hapus</button>` 
-        : '';
-
-    return `
-    <div class="note-card card">
-        <div class="note-header">
-            <div class="note-title">${escapeHtml(note.title)}</div>
-            <span class="note-badge ${note.isPublic == 1 ? 'badge-public' : 'badge-private'}">
-                ${note.isPublic == 1 ? '🌐 Publik' : '🔒 Pribadi'}
-            </span>
-        </div>
-        <div class="note-meta">
-            <div>👤 Dibuat oleh: ${note.authorName || 'Seseorang'}</div>
-            <div>📅 Tanggal: ${formatDate(note.createdAt)}</div>
-        </div>
-        <div class="note-content">${escapeHtml((note.content || '').substring(0, 150))}...</div>
-        <div class="note-actions">
-            <button class="btn btn-secondary btn-sm" onclick="window.location.href='viewer.html?code=${note.idNotes}'">👁️ Lihat</button>
-            <button class="btn btn-secondary btn-sm" onclick="window.location.href='editor.html?id=${note.idNotes}'">✏️ Edit</button>
-            
-            ${deleteButton}
-        </div>
-    </div>
-    `;
-}).join('');
             }
             
             container.style.display = 'grid';
             emptyState.style.display = 'none';
             
+            // Semua notes di sini adalah milik user, jadi semua memiliki akses penuh
             container.innerHTML = notes.map(note => `
                 <div class="note-card card">
                     <div class="note-header">
@@ -767,8 +734,9 @@ container.innerHTML = notes.map(note => {
                         <div>📅 Dibuat: ${formatDate(note.createdAt)}</div>
                         ${note.meetingDate ? `<div>📆 Rapat: ${formatDate(note.meetingDate)}</div>` : ''}
                         ${note.location ? `<div>📍 ${escapeHtml(note.location)}</div>` : ''}
+                        <div>🔑 Kode: <strong>${note.accessCode || '-'}</strong></div>
                     </div>
-                    <div class="note-content">${escapeHtml((note.content || '').substring(0, 150))}...</div>
+                    <div class="note-content">${escapeHtml((note.content || '').substring(0, 150))}${(note.content || '').length > 150 ? '...' : ''}</div>
                     <div class="note-actions">
                         <button class="btn btn-secondary btn-sm" onclick="window.location.href='viewer.html?code=${note.idNotes}'">👁️ Lihat</button>
                         <button class="btn btn-secondary btn-sm" onclick="window.location.href='editor.html?id=${note.idNotes}'">✏️ Edit</button>
@@ -795,52 +763,48 @@ container.innerHTML = notes.map(note => {
         }
 
         // ============================================
-        // ACTION HANDLERS
+        // ACTION HANDLERS - ENHANCED WITH BETTER ERROR HANDLING
         // ============================================
         
-// GANTI function window.handleDeleteNote dengan ini:
-
-window.handleDeleteNote = async (id) => {
-    // 1. Ambil data user terbaru saat tombol ditekan
-    const currentUser = getCurrentUser();
-    
-    // 2. Pastikan NIM tersedia (Cek properti 'nim' atau 'id')
-    const userNim = currentUser.nim || currentUser.id;
-
-    // DEBUG: Cek apakah NIM terbaca
-    if (!userNim) {
-        alert("Error: Identitas user (NIM) tidak ditemukan. Silakan login ulang.");
-        console.error("User Object:", currentUser); // Lihat di Console (F12) untuk debug
-        return;
-    }
-
-    if (confirm('Apakah Anda yakin ingin menghapus notulen ini? Permanen.')) {
-        try {
-            console.log("Mengirim data hapus:", { id: id, nim: userNim }); // Debug log
-
-            const res = await fetch('php/delete_note.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    id: id, 
-                    nim: userNim  // Pastikan variabel ini terisi
-                })
-            });
-
-            const result = await res.json();
-            
-            if(result.status === 'success') {
-                showToast('Notulen berhasil dihapus', 'success');
-                loadNotesFromDB(); // Refresh daftar
-            } else {
-                showToast('Gagal menghapus: ' + result.message, 'error');
+        window.handleDeleteNote = async (id) => {
+            if (!confirm('Apakah Anda yakin ingin menghapus notulen ini? Tindakan ini tidak dapat dibatalkan.')) {
+                return;
             }
-        } catch (err) {
-            console.error("Fetch Error:", err);
-            showToast('Error koneksi database', 'error');
-        }
-    }
-};
+            
+            try {
+                const userNim = user.nim || user.id;
+                
+                if (!userNim) {
+                    showToast('❌ Identitas user tidak ditemukan. Silakan login ulang.', 'error');
+                    return;
+                }
+
+                const response = await fetch('php/delete_note.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        id: id, 
+                        deleterNim: userNim  // Sesuai dengan parameter yang diharapkan server
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showToast('✅ Notulen berhasil dihapus', 'success');
+                    loadNotesFromDB(); // Refresh daftar
+                } else {
+                    if (response.status === 403) {
+                        showToast('❌ Anda tidak memiliki izin untuk menghapus notulen ini', 'error');
+                    } else {
+                        showToast('❌ Gagal menghapus: ' + result.message, 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                showToast('❌ Terjadi kesalahan koneksi', 'error');
+            }
+        };
 
         // Event Listeners UI
         document.getElementById('backBtn').addEventListener('click', () => {
